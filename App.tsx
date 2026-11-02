@@ -82,6 +82,8 @@ export default function App() {
 }
 function Journal() {
   const [data, setData] = useState<Data>(emptyData);
+  const [editing, setEditing] = useState<{day: number; session: Session} | null>(null);
+  const [deleting, setDeleting] = useState<{day: number; session: Session} | null>(null);
   const [ready, setReady] = useState(false);
   const [tab, setTab] = useState("Weight-lifting");
   const [day, setDay] = useState(0);
@@ -198,6 +200,22 @@ function Journal() {
       "Workout saved",
       "Your results now appear in a dated column beside your next workout.",
     );
+  }
+  function saveEditedWorkout() {
+    if (!editing) return;
+    if (!Object.values(editing.session.sets).every(validSets)) {
+      notify("Check your sets", "Enter a weight of zero or more and positive whole-number reps for every set.");
+      return;
+    }
+    const updated = editing;
+    setData(d => ({...d, sessions: {...d.sessions, [updated.day]: (d.sessions[updated.day] || []).map(s => s.id === updated.session.id ? updated.session : s)}}));
+    setEditing(null);
+  }
+  function deleteWorkout() {
+    if (!deleting) return;
+    const target = deleting;
+    setData(d => ({...d, sessions: {...d.sessions, [target.day]: (d.sessions[target.day] || []).filter(s => s.id !== target.session.id)}}));
+    setDeleting(null);
   }
   function saveCardio() {
     if (
@@ -385,6 +403,10 @@ function Journal() {
                                     {set.weight} × {set.reps}
                                   </Text>
                                 ))}
+                                <View style={styles.historyActions}>
+                                  <Pressable accessibilityRole="button" accessibilityLabel={`Edit saved workout ${s.id} for ${e.name}`} onPress={() => setEditing({day, session: JSON.parse(JSON.stringify(s))})} style={styles.iconButton}><Text style={styles.editIcon}>✎</Text></Pressable>
+                                  <Pressable accessibilityRole="button" accessibilityLabel={`Delete saved workout ${s.id} for ${e.name}`} onPress={() => setDeleting({day, session:s})} style={styles.iconButton}><Text style={styles.deleteIcon}>🗑</Text></Pressable>
+                                </View>
                               </View>
                             ))}
                           </View>
@@ -468,6 +490,36 @@ function Journal() {
           Saved on this device · no account required
         </Text>
       </ScrollView>
+      <Modal visible={editing !== null} animationType="slide" onRequestClose={() => setEditing(null)}>
+        <SafeAreaView style={styles.root}>
+          <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
+            <Text style={styles.heading}>Edit saved workout</Text>
+            <Text style={styles.subtitle}>{editing ? DAYS[editing.day] : ''} · {editing ? new Date(editing.session.date).toLocaleString() : ''}</Text>
+            <Text style={styles.muted}>Changes update this saved workout. Today’s entries stay as they are.</Text>
+            {editing && Object.entries(editing.session.sets).map(([exerciseId, sets]) => <View key={exerciseId} style={styles.card}>
+              <Text style={styles.exerciseName}>{catalog.find(e => e.id === exerciseId)?.name || exerciseId}</Text>
+              {sets.map((set, index) => <View key={index} style={styles.row}>
+                <Text style={styles.muted}>Set {index + 1}</Text>
+                <TextInput accessibilityLabel={`Edit ${exerciseId} set ${index + 1} weight in kilograms`} value={set.weight} keyboardType="decimal-pad" style={styles.input} onChangeText={value => setEditing(current => current ? {...current, session: {...current.session, sets: {...current.session.sets, [exerciseId]: current.session.sets[exerciseId].map((entry, i) => i === index ? {...entry, weight:value.replace(',', '.')} : entry)}}} : current)} />
+                <Text style={styles.muted}>kg ×</Text>
+                <TextInput accessibilityLabel={`Edit ${exerciseId} set ${index + 1} reps`} value={set.reps} keyboardType="number-pad" style={styles.input} onChangeText={value => setEditing(current => current ? {...current, session: {...current.session, sets: {...current.session.sets, [exerciseId]: current.session.sets[exerciseId].map((entry, i) => i === index ? {...entry, reps:value} : entry)}}} : current)} />
+                <Text style={styles.muted}>reps</Text>
+              </View>)}
+            </View>)}
+            <Button title="Save changes" onPress={saveEditedWorkout}/>
+            <Button title="Cancel editing" secondary onPress={() => setEditing(null)}/>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+      <Modal visible={deleting !== null} transparent animationType="fade" onRequestClose={() => setDeleting(null)}>
+        <View style={styles.confirmOverlay}><View style={styles.confirmCard}>
+          <Text style={styles.heading}>Delete saved workout?</Text>
+          <Text style={styles.subtitle}>{deleting ? DAYS[deleting.day] : ''} · {deleting ? new Date(deleting.session.date).toLocaleString() : ''}</Text>
+          <Text style={styles.subtitle}>This deletes the entire saved workout, including every exercise in its dated column. This cannot be undone. Today’s entries will remain.</Text>
+          <Button title="Delete workout" onPress={deleteWorkout}/>
+          <Button title="Keep workout" secondary onPress={() => setDeleting(null)}/>
+        </View></View>
+      </Modal>
       <Modal
         visible={picker !== null}
         animationType="slide"
@@ -642,6 +694,12 @@ const styles = StyleSheet.create({
     color: "#a9b6ac",
   },
   todayColumn: { width: 164 },
+  historyActions: {flexDirection: 'row', gap: 4, marginTop: 8},
+  iconButton: {minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center', borderRadius: 10, backgroundColor: '#101714'},
+  editIcon: {fontSize: 25, color: '#b5f36a'},
+  deleteIcon: {fontSize: 22, color: '#ffb6aa'},
+  confirmOverlay: {flex: 1, backgroundColor: '#000b', justifyContent: 'center', alignItems: 'center', padding: 20},
+  confirmCard: {backgroundColor: '#1c2821', padding: 22, borderRadius: 18, gap: 14, width:'100%', maxWidth: 480},
   historyColumn: { width: 120, alignItems: "center" },
   columnTitle: {
     color: "#b5f36a",

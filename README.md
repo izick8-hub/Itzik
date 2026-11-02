@@ -40,7 +40,7 @@ Install **Expo Go** on your iPhone and scan the terminal QR code with the Camera
 - Cardio activity, duration in minutes, distance in kilometers, and activity history.
 - No rest timers or custom exercise creation.
 
-Workout selections, drafts, completed sessions, and cardio entries persist across restarts. Removing the app can remove the local data; this version does not include backup, sync, export, or history editing. Exercise names are bundled for offline use. Demonstration photos currently load over HTTPS and require Internet access; unavailable photos display a fallback.
+Workout selections, drafts, completed sessions, and cardio entries persist across restarts. Removing the app can remove the local data; this version does not include backup, sync, or export. Exercise names are bundled for offline use. Demonstration photos currently load over HTTPS and require Internet access; unavailable photos display a fallback.
 
 ## Development checks
 
@@ -61,3 +61,5 @@ The bundled 876-entry catalog and hosted photographs come from [yuhonas/free-exe
 The `Publish gym tracker` GitHub Actions workflow builds and deploys the website on pushes to `main`, or when run manually from the Actions tab. Set repository Settings → Pages → Source to GitHub Actions. The workflow obtains the deployment base path from GitHub, so links and offline caching work at `/Itzik/`.
 
 Expected website: https://izick8-hub.github.io/Itzik/ (available after successful deployment). Exercise illustrations currently remain upstream photos, not uniform custom illustrations.
+
+Saved lifting workout columns include a pencil to edit all exercises in that session and a trash button with confirmation to delete the entire session. Editing and deletion preserve ongoing drafts and other workouts.

@@ -89,3 +89,32 @@ test("website reopens offline after the app shell is cached", async ({
   await expect(page.getByText("Lift Journal", { exact: true })).toBeVisible();
   await context.setOffline(false);
 });
+
+test('saved workouts can be edited, cancelled and deleted without changing drafts or other workouts', async ({page}) => {
+  const sets = [{weight:'40',reps:'12'},{weight:'40',reps:'10'},{weight:'40',reps:'8'}];
+  const saved = {id:'saved-one',date:'2026-11-01T10:00:00.000Z',sets:{Dumbbell_Shoulder_Press:sets,Barbell_Squat:sets}};
+  await page.goto('./');
+  await page.evaluate(({saved,sets}) => localStorage.setItem('lift-journal:v1',JSON.stringify({selections:{'0:Shoulders':['Dumbbell_Shoulder_Press'],'0:Legs':['Barbell_Squat']},sessions:{0:[saved,{...saved,id:'saved-two'}],1:[{...saved,id:'other-day'}]},drafts:{0:{id:'draft',date:'2026-11-02T10:00:00.000Z',sets:{Dumbbell_Shoulder_Press:sets}}},cardio:[]})), {saved,sets});
+  await page.reload();
+  const edit = page.getByRole('button',{name:'Edit saved workout saved-one for Dumbbell Shoulder Press',exact:true});
+  await edit.click();
+  const weight=page.getByRole('textbox',{name:'Edit Dumbbell_Shoulder_Press set 1 weight in kilograms',exact:true});
+  await weight.fill('99');
+  await page.getByRole('button',{name:'Cancel editing',exact:true}).click();
+  await edit.click();await expect(weight).toHaveValue('40');
+  await weight.fill('42.5');
+  await page.getByRole('button',{name:'Save changes',exact:true}).click();
+  await expect(page.getByText('42.5 × 12',{exact:true})).toBeVisible();
+  await page.reload();await expect(page.getByText('42.5 × 12',{exact:true})).toBeVisible();
+  const remove=page.getByRole('button',{name:'Delete saved workout saved-one for Dumbbell Shoulder Press',exact:true});
+  await remove.click();await page.getByRole('button',{name:'Keep workout',exact:true}).click();
+  await expect(page.getByText('2 workouts saved',{exact:true})).toBeVisible();
+  await remove.click();await page.getByRole('button',{name:'Delete workout',exact:true}).click();
+  await expect(page.getByText('1 workouts saved',{exact:true})).toBeVisible();
+  await expect(page.getByText('42.5 × 12',{exact:true})).toHaveCount(0);
+  await page.reload();await expect(page.getByText('1 workouts saved',{exact:true})).toBeVisible();
+  const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('lift-journal:v1')!));
+  expect(stored.sessions[0].map((s:any)=>s.id)).toEqual(['saved-two']);
+  expect(stored.sessions[1][0].id).toBe('other-day');
+  expect(stored.drafts[0].sets.Dumbbell_Shoulder_Press[0].weight).toBe('40');
+});
