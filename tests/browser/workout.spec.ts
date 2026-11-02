@@ -118,3 +118,22 @@ test('saved workouts can be edited, cancelled and deleted without changing draft
   expect(stored.sessions[1][0].id).toBe('other-day');
   expect(stored.drafts[0].sets.Dumbbell_Shoulder_Press[0].weight).toBe('40');
 });
+
+test('minus removes only the selected exercise and keeps history when re-added', async ({page}) => {
+  const sets=[{weight:'20',reps:'12'},{weight:'20',reps:'10'},{weight:'20',reps:'8'}];
+  await page.goto('./');
+  await page.evaluate(sets => localStorage.setItem('lift-journal:v1',JSON.stringify({selections:{'0:Shoulders':['Dumbbell_Shoulder_Press'],'0:Legs':['Barbell_Squat'],'1:Chest':['Barbell_Bench_Press_-_Medium_Grip']},sessions:{0:[{id:'saved',date:'2026-11-01T10:00:00.000Z',sets:{Dumbbell_Shoulder_Press:sets}}]},drafts:{0:{id:'draft',date:'2026-11-02T10:00:00.000Z',sets:{Dumbbell_Shoulder_Press:sets}}},cardio:[]})),sets);
+  await page.reload();
+  await page.getByRole('button',{name:'Remove Dumbbell Shoulder Press from Shoulders',exact:true}).click();
+  await expect(page.getByText('Dumbbell Shoulder Press',{exact:true})).toHaveCount(0);
+  await expect(page.getByRole('button',{name:'Remove Barbell Squat from Legs',exact:true})).toBeVisible();
+  await page.reload();await expect(page.getByText('Dumbbell Shoulder Press',{exact:true})).toHaveCount(0);
+  const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('lift-journal:v1')!));
+  expect(stored.sessions[0][0].sets.Dumbbell_Shoulder_Press[0].weight).toBe('20');
+  expect(stored.selections['1:Chest']).toEqual(['Barbell_Bench_Press_-_Medium_Grip']);
+  await page.getByRole('button',{name:'+ Exercise',exact:true}).nth(1).click();
+  await page.getByRole('textbox',{name:'Search exercises'}).fill('Dumbbell Shoulder Press');
+  await page.getByRole('button',{name:/Dumbbell Shoulder Press/}).click();
+  await expect(page.getByText('20 × 12',{exact:true})).toBeVisible();
+  await expect(page.getByRole('textbox',{name:'Dumbbell Shoulder Press set 1 weight in kilograms',exact:true})).toHaveValue('20');
+});

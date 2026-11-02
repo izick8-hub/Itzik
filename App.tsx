@@ -148,6 +148,12 @@ function Journal() {
     });
     setPicker(null);
   }
+  function removeExercise(group: string, exerciseId: string) {
+    setData(current => {
+      const key = keyFor(day, group);
+      return {...current, selections: {...current.selections, [key]: (current.selections[key] || []).filter(id => id !== exerciseId)}};
+    });
+  }
   function editSet(
     id: string,
     index: number,
@@ -341,6 +347,9 @@ function Journal() {
                             {e.equipment || "Bodyweight"} · kg × reps
                           </Text>
                         </View>
+                        <Pressable accessibilityRole="button" accessibilityLabel={`Remove ${e.name} from ${group}`} onPress={() => removeExercise(group, id)} style={styles.iconButton}>
+                          <Text style={styles.deleteIcon}>−</Text>
+                        </Pressable>
                       </View>
                       <ScrollView
                         horizontal
