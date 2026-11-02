@@ -35,7 +35,7 @@ Install **Expo Go** on your iPhone and scan the terminal QR code with the Camera
 - Separate Legs + Shoulders, Chest + Biceps, and Back + Triceps workout days.
 - Searchable muscle-specific exercise picker with equipment filters and demonstration photos.
 - Three sets per exercise, with kilograms and reps in each row.
-- Today’s editable column followed by the most recent completed workout and horizontally scrollable earlier sessions.
+- Today’s editable sets beside a selectable previous session, with older/newer controls and no horizontal scrolling.
 - Finish a workout to save a dated column. Partially entered workouts persist as drafts.
 - Cardio activity, duration in minutes, distance in kilometers, and activity history.
 - No rest timers or custom exercise creation.
@@ -63,3 +63,13 @@ The `Publish gym tracker` GitHub Actions workflow builds and deploys the website
 Expected website: https://izick8-hub.github.io/Itzik/ (available after successful deployment). Exercise illustrations currently remain upstream photos, not uniform custom illustrations.
 
 Saved lifting workout columns include a pencil to edit all exercises in that session and a trash button with confirmation to delete the entire session. Editing and deletion preserve ongoing drafts and other workouts.
+
+## Website design and insights
+
+The website uses `App.web.tsx` with shared data types and the existing `lift-journal:v1` storage key. Native Expo builds continue using `App.tsx`. The website adds Home, Weight-lifting and Cardio navigation, Inter typography, safe-area-aware bottom actions, and responsive layouts. No stored workouts are migrated or discarded.
+
+Dashboard metrics use completed lifting sessions: all-time session count, consecutive local calendar training days (ending today or yesterday), and volume as the sum of logged kilograms × reps. Volume is an external-load logging metric, not a measure of total mechanical work. Recent progress identifies the exercise and compares mean recorded weight. Exercise cards compare the two most recent sessions within that day, only when set counts match; weight and total-rep changes are separate, and zero baselines do not produce percentages.
+
+Progression guidance is a general starting point: keep load and add a controlled rep, or consider a 2.5–5% increase after all equal-load sets reach 12 reps, only if technique felt controlled. It does not infer recovery, injuries, exertion, or equipment increments from missing data. Unequal-load sets and bodyweight exercises receive rep-focused guidance.
+
+Responsive browser checks cover 320, 390, 768 and 1440 pixel widths. The current workspace browser is Chromium; actual Safari device testing remains separate.

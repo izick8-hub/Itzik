@@ -14,9 +14,9 @@
       "shortName": "Lift Journal",
       "bundler": "metro",
       "output": "single",
-      "backgroundColor": "#101714",
-      "themeColor": "#101714",
-      "favicon": "./assets/icon.png"
+      "backgroundColor": "#0B0F0D",
+      "themeColor": "#0B0F0D",
+      "favicon": "./assets/lift-icon.png"
     }
   }
 }

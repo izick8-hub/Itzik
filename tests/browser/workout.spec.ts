@@ -3,6 +3,9 @@ test("lifting history, day isolation, cardio and local persistence", async ({
   page,
 }) => {
   await page.goto("./");
+  await page
+    .getByRole("button", { name: "Weight-lifting", exact: true })
+    .click();
   await expect(page.getByText("Lift Journal", { exact: true })).toBeVisible();
   await page
     .getByRole("button", { name: "+ Exercise", exact: true })
@@ -59,6 +62,9 @@ test("mobile screen fits viewport and produces screenshot", async ({
   page,
 }) => {
   await page.goto("./");
+  await page
+    .getByRole("button", { name: "Weight-lifting", exact: true })
+    .click();
   await expect(page.getByText("Lift Journal", { exact: true })).toBeVisible();
   expect(
     await page.evaluate(
@@ -76,6 +82,9 @@ test("website reopens offline after the app shell is cached", async ({
   context,
 }) => {
   await page.goto("./");
+  await page
+    .getByRole("button", { name: "Weight-lifting", exact: true })
+    .click();
   await expect(page.getByText("Lift Journal", { exact: true })).toBeVisible();
   await page.evaluate(async () => {
     await navigator.serviceWorker.ready;
@@ -90,50 +99,195 @@ test("website reopens offline after the app shell is cached", async ({
   await context.setOffline(false);
 });
 
-test('saved workouts can be edited, cancelled and deleted without changing drafts or other workouts', async ({page}) => {
-  const sets = [{weight:'40',reps:'12'},{weight:'40',reps:'10'},{weight:'40',reps:'8'}];
-  const saved = {id:'saved-one',date:'2026-11-01T10:00:00.000Z',sets:{Dumbbell_Shoulder_Press:sets,Barbell_Squat:sets}};
-  await page.goto('./');
-  await page.evaluate(({saved,sets}) => localStorage.setItem('lift-journal:v1',JSON.stringify({selections:{'0:Shoulders':['Dumbbell_Shoulder_Press'],'0:Legs':['Barbell_Squat']},sessions:{0:[saved,{...saved,id:'saved-two'}],1:[{...saved,id:'other-day'}]},drafts:{0:{id:'draft',date:'2026-11-02T10:00:00.000Z',sets:{Dumbbell_Shoulder_Press:sets}}},cardio:[]})), {saved,sets});
+test("saved workouts can be edited, cancelled and deleted without changing drafts or other workouts", async ({
+  page,
+}) => {
+  const sets = [
+    { weight: "40", reps: "12" },
+    { weight: "40", reps: "10" },
+    { weight: "40", reps: "8" },
+  ];
+  const saved = {
+    id: "saved-one",
+    date: "2026-11-01T10:00:00.000Z",
+    sets: { Dumbbell_Shoulder_Press: sets, Barbell_Squat: sets },
+  };
+  await page.goto("./");
+  await page
+    .getByRole("button", { name: "Weight-lifting", exact: true })
+    .click();
+  await page.evaluate(
+    ({ saved, sets }) =>
+      localStorage.setItem(
+        "lift-journal:v1",
+        JSON.stringify({
+          selections: {
+            "0:Shoulders": ["Dumbbell_Shoulder_Press"],
+            "0:Legs": ["Barbell_Squat"],
+          },
+          sessions: {
+            0: [saved, { ...saved, id: "saved-two" }],
+            1: [{ ...saved, id: "other-day" }],
+          },
+          drafts: {
+            0: {
+              id: "draft",
+              date: "2026-11-02T10:00:00.000Z",
+              sets: { Dumbbell_Shoulder_Press: sets },
+            },
+          },
+          cardio: [],
+        }),
+      ),
+    { saved, sets },
+  );
   await page.reload();
-  const edit = page.getByRole('button',{name:'Edit saved workout saved-one for Dumbbell Shoulder Press',exact:true});
+  const edit = page.getByRole("button", {
+    name: "Edit saved workout saved-one for Dumbbell Shoulder Press",
+    exact: true,
+  });
+  await page
+    .getByRole("button", {
+      name: "Older workout for Dumbbell Shoulder Press",
+      exact: true,
+    })
+    .click();
   await edit.click();
-  const weight=page.getByRole('textbox',{name:'Edit Dumbbell_Shoulder_Press set 1 weight in kilograms',exact:true});
-  await weight.fill('99');
-  await page.getByRole('button',{name:'Cancel editing',exact:true}).click();
-  await edit.click();await expect(weight).toHaveValue('40');
-  await weight.fill('42.5');
-  await page.getByRole('button',{name:'Save changes',exact:true}).click();
-  await expect(page.getByText('42.5 × 12',{exact:true})).toBeVisible();
-  await page.reload();await expect(page.getByText('42.5 × 12',{exact:true})).toBeVisible();
-  const remove=page.getByRole('button',{name:'Delete saved workout saved-one for Dumbbell Shoulder Press',exact:true});
-  await remove.click();await page.getByRole('button',{name:'Keep workout',exact:true}).click();
-  await expect(page.getByText('2 workouts saved',{exact:true})).toBeVisible();
-  await remove.click();await page.getByRole('button',{name:'Delete workout',exact:true}).click();
-  await expect(page.getByText('1 workouts saved',{exact:true})).toBeVisible();
-  await expect(page.getByText('42.5 × 12',{exact:true})).toHaveCount(0);
-  await page.reload();await expect(page.getByText('1 workouts saved',{exact:true})).toBeVisible();
-  const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('lift-journal:v1')!));
-  expect(stored.sessions[0].map((s:any)=>s.id)).toEqual(['saved-two']);
-  expect(stored.sessions[1][0].id).toBe('other-day');
-  expect(stored.drafts[0].sets.Dumbbell_Shoulder_Press[0].weight).toBe('40');
+  const weight = page.getByRole("textbox", {
+    name: "Edit Dumbbell_Shoulder_Press set 1 weight in kilograms",
+    exact: true,
+  });
+  await weight.fill("99");
+  await page
+    .getByRole("button", { name: "Cancel editing", exact: true })
+    .click();
+  await edit.click();
+  await expect(weight).toHaveValue("40");
+  await weight.fill("42.5");
+  await page.getByRole("button", { name: "Save changes", exact: true }).click();
+  await expect(page.getByText("42.5 × 12", { exact: true })).toBeVisible();
+  await page.reload();
+  await page
+    .getByRole("button", {
+      name: "Older workout for Dumbbell Shoulder Press",
+      exact: true,
+    })
+    .click();
+  await expect(page.getByText("42.5 × 12", { exact: true })).toBeVisible();
+  const remove = page.getByRole("button", {
+    name: "Delete saved workout saved-one for Dumbbell Shoulder Press",
+    exact: true,
+  });
+  await remove.click();
+  await page.getByRole("button", { name: "Keep workout", exact: true }).click();
+  await expect(
+    page.getByText("2 workouts saved", { exact: true }),
+  ).toBeVisible();
+  await remove.click();
+  await page
+    .getByRole("button", { name: "Delete workout", exact: true })
+    .click();
+  await expect(
+    page.getByText("1 workouts saved", { exact: true }),
+  ).toBeVisible();
+  await expect(page.getByText("42.5 × 12", { exact: true })).toHaveCount(0);
+  await page.reload();
+  await expect(
+    page.getByText("1 workouts saved", { exact: true }),
+  ).toBeVisible();
+  const stored = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem("lift-journal:v1")!),
+  );
+  expect(stored.sessions[0].map((s: any) => s.id)).toEqual(["saved-two"]);
+  expect(stored.sessions[1][0].id).toBe("other-day");
+  expect(stored.drafts[0].sets.Dumbbell_Shoulder_Press[0].weight).toBe("40");
 });
 
-test('minus removes only the selected exercise and keeps history when re-added', async ({page}) => {
-  const sets=[{weight:'20',reps:'12'},{weight:'20',reps:'10'},{weight:'20',reps:'8'}];
-  await page.goto('./');
-  await page.evaluate(sets => localStorage.setItem('lift-journal:v1',JSON.stringify({selections:{'0:Shoulders':['Dumbbell_Shoulder_Press'],'0:Legs':['Barbell_Squat'],'1:Chest':['Barbell_Bench_Press_-_Medium_Grip']},sessions:{0:[{id:'saved',date:'2026-11-01T10:00:00.000Z',sets:{Dumbbell_Shoulder_Press:sets}}]},drafts:{0:{id:'draft',date:'2026-11-02T10:00:00.000Z',sets:{Dumbbell_Shoulder_Press:sets}}},cardio:[]})),sets);
+test("minus removes only the selected exercise and keeps history when re-added", async ({
+  page,
+}) => {
+  const sets = [
+    { weight: "20", reps: "12" },
+    { weight: "20", reps: "10" },
+    { weight: "20", reps: "8" },
+  ];
+  await page.goto("./");
+  await page
+    .getByRole("button", { name: "Weight-lifting", exact: true })
+    .click();
+  await page.evaluate(
+    (sets) =>
+      localStorage.setItem(
+        "lift-journal:v1",
+        JSON.stringify({
+          selections: {
+            "0:Shoulders": ["Dumbbell_Shoulder_Press"],
+            "0:Legs": ["Barbell_Squat"],
+            "1:Chest": ["Barbell_Bench_Press_-_Medium_Grip"],
+          },
+          sessions: {
+            0: [
+              {
+                id: "saved",
+                date: "2026-11-01T10:00:00.000Z",
+                sets: { Dumbbell_Shoulder_Press: sets },
+              },
+            ],
+          },
+          drafts: {
+            0: {
+              id: "draft",
+              date: "2026-11-02T10:00:00.000Z",
+              sets: { Dumbbell_Shoulder_Press: sets },
+            },
+          },
+          cardio: [],
+        }),
+      ),
+    sets,
+  );
   await page.reload();
-  await page.getByRole('button',{name:'Remove Dumbbell Shoulder Press from Shoulders',exact:true}).click();
-  await expect(page.getByText('Dumbbell Shoulder Press',{exact:true})).toHaveCount(0);
-  await expect(page.getByRole('button',{name:'Remove Barbell Squat from Legs',exact:true})).toBeVisible();
-  await page.reload();await expect(page.getByText('Dumbbell Shoulder Press',{exact:true})).toHaveCount(0);
-  const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('lift-journal:v1')!));
-  expect(stored.sessions[0][0].sets.Dumbbell_Shoulder_Press[0].weight).toBe('20');
-  expect(stored.selections['1:Chest']).toEqual(['Barbell_Bench_Press_-_Medium_Grip']);
-  await page.getByRole('button',{name:'+ Exercise',exact:true}).nth(1).click();
-  await page.getByRole('textbox',{name:'Search exercises'}).fill('Dumbbell Shoulder Press');
-  await page.getByRole('button',{name:/Dumbbell Shoulder Press/}).click();
-  await expect(page.getByText('20 × 12',{exact:true})).toBeVisible();
-  await expect(page.getByRole('textbox',{name:'Dumbbell Shoulder Press set 1 weight in kilograms',exact:true})).toHaveValue('20');
+  await page
+    .getByRole("button", {
+      name: "Remove Dumbbell Shoulder Press from Shoulders",
+      exact: true,
+    })
+    .click();
+  await expect(
+    page.getByText("Dumbbell Shoulder Press", { exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("button", {
+      name: "Remove Barbell Squat from Legs",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await page.reload();
+  await expect(
+    page.getByText("Dumbbell Shoulder Press", { exact: true }),
+  ).toHaveCount(0);
+  const stored = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem("lift-journal:v1")!),
+  );
+  expect(stored.sessions[0][0].sets.Dumbbell_Shoulder_Press[0].weight).toBe(
+    "20",
+  );
+  expect(stored.selections["1:Chest"]).toEqual([
+    "Barbell_Bench_Press_-_Medium_Grip",
+  ]);
+  await page
+    .getByRole("button", { name: "+ Exercise", exact: true })
+    .nth(1)
+    .click();
+  await page
+    .getByRole("textbox", { name: "Search exercises" })
+    .fill("Dumbbell Shoulder Press");
+  await page.getByRole("button", { name: /Dumbbell Shoulder Press/ }).click();
+  await expect(page.getByText("20 × 12", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("textbox", {
+      name: "Dumbbell Shoulder Press set 1 weight in kilograms",
+      exact: true,
+    }),
+  ).toHaveValue("20");
 });

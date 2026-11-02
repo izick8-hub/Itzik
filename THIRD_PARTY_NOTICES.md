@@ -8,3 +8,7 @@ The upstream README describes the project as an “Open Public Domain Exercise D
 
 Upstream README: https://github.com/yuhonas/free-exercise-db/blob/main/README.md
 License reference provided upstream: https://unlicense.org/
+
+# Inter typeface
+
+Inter by the Inter Project Authors, bundled from https://github.com/rsms/inter. Licensed under the SIL Open Font License 1.1; full notice retained in src/Inter-LICENSE.txt.
