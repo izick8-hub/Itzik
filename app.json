@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "Lift Journal",
+    "slug": "lift-journal",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.itzik.liftjournal"
+    },
+    "web": {
+      "name": "Lift Journal",
+      "shortName": "Lift Journal",
+      "bundler": "metro",
+      "output": "single",
+      "backgroundColor": "#101714",
+      "themeColor": "#101714",
+      "favicon": "./assets/icon.png"
+    }
+  }
+}
