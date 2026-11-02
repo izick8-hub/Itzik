@@ -114,3 +114,22 @@ test("progress compares real stored sessions and long histories stay within the 
     .locator(".exercise-card")
     .screenshot({ path: "/tmp/lift-exercise-new.png" });
 });
+
+test('save action stays below exercises and never floats over inputs on a short phone screen', async ({page})=>{
+ await page.setViewportSize({width:390,height:560});
+ await page.goto('./');
+ await page.getByRole('button',{name:'Weight-lifting',exact:true}).click();
+ const save=page.getByRole('button',{name:'Finish & save workout',exact:true});
+ expect(await page.locator('.workout-action').evaluate(e=>getComputedStyle(e).position)).toBe('static');
+ await page.getByRole('button',{name:'+ Exercise',exact:true}).nth(1).click();
+ await page.getByRole('textbox',{name:'Search exercises'}).fill('Dumbbell Shoulder Press');
+ await page.getByRole('button',{name:/Dumbbell Shoulder Press/}).click();
+ const lastInput=page.getByRole('textbox',{name:'Dumbbell Shoulder Press set 3 reps',exact:true});
+ await lastInput.scrollIntoViewIfNeeded();
+ await lastInput.fill('12');
+ await expect(lastInput).toHaveValue('12');
+ expect(await page.evaluate(()=>{const a=document.querySelector('.workout-action')!.getBoundingClientRect();const c=document.querySelector('.exercise-card')!.getBoundingClientRect();return a.top>=c.bottom})).toBe(true);
+ await save.scrollIntoViewIfNeeded();
+ await expect(save).toBeInViewport();
+ expect(await save.evaluate(e=>{const r=e.getBoundingClientRect();const n=document.querySelector('.bottom-nav')!.getBoundingClientRect();return r.bottom<=n.top})).toBe(true);
+});

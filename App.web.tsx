@@ -376,7 +376,7 @@ export default function App() {
       </header>
       <main
         ref={main}
-        className={`main-content ${tab === "Weight-lifting" ? "with-workout-action" : ""}`}
+        className="main-content"
       >
         {error && (
           <div role="alert" className="error">
@@ -899,10 +899,6 @@ export default function App() {
             </section>
           </>
         )}
-        <footer className="privacy-note">
-          <span /> SAVED ON THIS DEVICE · NO ACCOUNT REQUIRED
-        </footer>
-      </main>
       {tab === "Weight-lifting" && (
         <div className="workout-action">
           <div>
@@ -918,6 +914,10 @@ export default function App() {
           </button>
         </div>
       )}
+        <footer className="privacy-note">
+          <span /> SAVED ON THIS DEVICE · NO ACCOUNT REQUIRED
+        </footer>
+      </main>
       <nav className="bottom-nav" aria-label="Main navigation">
         {[
           ["Home", "home"],

@@ -771,15 +771,11 @@ p {
   color: var(--muted);
   line-height: 1.6;
 }
-.with-workout-action {
-  padding-bottom: 215px;
-}
 .workout-action {
-  position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: calc(77px + env(safe-area-inset-bottom, 0px));
-  width: min(calc(100% - 32px), 1028px);
+  position: static;
+  width: 100%;
+  max-width: 800px;
+  align-self: center;
   border: 1px solid #ffffff0d;
   border-radius: 14px;
   background: #1a241cf5;
@@ -790,7 +786,6 @@ p {
   justify-content: space-between;
   gap: 12px;
   box-shadow: 0 8px 24px #0003;
-  z-index: 19;
 }
 .workout-action > div {
   display: flex;
@@ -1097,9 +1092,6 @@ p {
   .bottom-nav {
     max-width: 520px;
   }
-  .workout-action {
-    width: 780px;
-  }
   .welcome-emblem {
     margin-right: 16px;
   }
@@ -1317,11 +1309,7 @@ p {
   .exercise-insight small {
     font-size: 8px;
   }
-  .with-workout-action {
-    padding-bottom: 205px;
-  }
   .workout-action {
-    bottom: calc(76px + env(safe-area-inset-bottom, 0px));
     padding: 10px 12px;
     gap: 8px;
   }

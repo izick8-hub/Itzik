@@ -66,7 +66,7 @@ Saved lifting workout columns include a pencil to edit all exercises in that ses
 
 ## Website design and insights
 
-The website uses `App.web.tsx` with shared data types and the existing `lift-journal:v1` storage key. Native Expo builds continue using `App.tsx`. The website adds Home, Weight-lifting and Cardio navigation, Inter typography, safe-area-aware bottom actions, and responsive layouts. No stored workouts are migrated or discarded.
+The website uses `App.web.tsx` with shared data types and the existing `lift-journal:v1` storage key. Native Expo builds continue using `App.tsx`. The website adds Home, Weight-lifting and Cardio navigation, Inter typography, safe-area-aware bottom navigation and in-page workout completion, and responsive layouts. No stored workouts are migrated or discarded.
 
 Dashboard metrics use completed lifting sessions: all-time session count, consecutive local calendar training days (ending today or yesterday), and volume as the sum of logged kilograms × reps. Volume is an external-load logging metric, not a measure of total mechanical work. Recent progress identifies the exercise and compares mean recorded weight. Exercise cards compare the two most recent sessions within that day, only when set counts match; weight and total-rep changes are separate, and zero baselines do not produce percentages.
 
