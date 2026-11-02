@@ -180,6 +180,7 @@ export default function App() {
       sessionStorage.setItem("lift-journal:view", tab);
     } catch {}
     main.current?.scrollTo({ top: 0 });
+    window.scrollTo(0, 0);
   }, [tab]);
   useEffect(() => {
     if (!notice) return;
