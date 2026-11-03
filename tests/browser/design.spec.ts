@@ -228,3 +228,52 @@ test("touch swipes reach Shoulders and scrolling returns after closing the exerc
   await swipe();
   expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(100);
 });
+
+test("personalized muscle artwork matches each split, loads locally and fits mobile", async ({
+  page,
+}) => {
+  await page.goto("./");
+  await page
+    .getByRole("button", { name: "Weight-lifting", exact: true })
+    .click();
+  const splits = [
+    ["Legs + Shoulders Day", ["Legs", "Shoulders"]],
+    ["Chest + Biceps Day", ["Chest", "Biceps"]],
+    ["Back + Triceps Day", ["Back", "Triceps"]],
+  ] as const;
+  for (const [day, muscles] of splits) {
+    await page.getByText(day, { exact: true }).click();
+    for (const muscle of muscles) {
+      const art = page
+        .locator(".muscle-title")
+        .getByRole("img", { name: `${muscle} illustration`, exact: true });
+      await expect(art).toBeVisible();
+      await art.locator("img").evaluate(async (e: HTMLImageElement) => {
+        if (!e.complete)
+          await new Promise<void>((resolve, reject) => {
+            e.onload = () => resolve();
+            e.onerror = () => reject(Error("Muscle artwork did not load"));
+          });
+      });
+      expect(
+        await art
+          .locator("img")
+          .evaluate((e: HTMLImageElement) => e.naturalWidth),
+      ).toBe(1536);
+    }
+  }
+  for (const width of [320, 390, 768, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth,
+      ),
+    ).toBe(true);
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByText("Legs + Shoulders Day", { exact: true }).click();
+  await page
+    .locator(".muscle-header")
+    .first()
+    .screenshot({ path: "/tmp/lift-personal-icons.png" });
+});

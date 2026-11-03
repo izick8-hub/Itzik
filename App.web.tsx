@@ -96,6 +96,37 @@ function Icon({ type }: { type: string }) {
     </svg>
   );
 }
+const MUSCLE_TILES: Record<string, [number, number]> = {
+  Shoulders: [0, 0],
+  Legs: [1, 0],
+  Back: [2, 0],
+  Triceps: [0, 1],
+  Biceps: [1, 1],
+  Chest: [2, 1],
+};
+function MuscleArt({
+  muscle,
+  small = false,
+}: {
+  muscle: string;
+  small?: boolean;
+}) {
+  const [column, row] = MUSCLE_TILES[muscle];
+  return (
+    <span
+      className={`muscle-art ${small ? "muscle-art-small" : ""}`}
+      role="img"
+      aria-label={`${muscle} illustration`}
+      data-muscle={muscle}
+    >
+      <img
+        src="icons/muscle-atlas.png"
+        alt=""
+        style={{ left: `${-column * 100}%`, top: `${-row * 100}%` }}
+      />
+    </span>
+  );
+}
 function Photo({ id }: { id: string }) {
   const e = catalog.find((e) => e.id === id);
   const [failed, setFailed] = useState(false);
@@ -620,6 +651,11 @@ export default function App() {
                         exercises
                       </p>
                     </div>
+                    <span className="split-mascots" aria-hidden="true">
+                      {GROUPS[i].map((muscle) => (
+                        <MuscleArt key={muscle} muscle={muscle} small />
+                      ))}
+                    </span>
                     <Icon type="chevron" />
                   </button>
                 ))}
@@ -717,7 +753,13 @@ export default function App() {
             {GROUPS[day].map((group) => (
               <section className="muscle-section" key={group}>
                 <div className="muscle-header">
-                  <h3>{group}</h3>
+                  <div className="muscle-title">
+                    <MuscleArt muscle={group} />
+                    <div>
+                      <p className="eyebrow">MUSCLE GROUP</p>
+                      <h3>{group}</h3>
+                    </div>
+                  </div>
                   <button
                     className="secondary add-exercise"
                     aria-label="+ Exercise"

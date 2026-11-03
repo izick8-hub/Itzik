@@ -75,3 +75,7 @@ Progression guidance is a general starting point: keep load and add a controlled
 Responsive browser checks cover 320, 390, 768 and 1440 pixel widths. The current workspace browser is Chromium; actual Safari device testing remains separate.
 
 Exercise removal now supports immediate Undo and persistent Restore controls. Removed selections keep their drafts and saved history. The New workout action creates a dated draft without replacing any unfinished draft and restores exercises from the last completed session; current and previous dates appear above each exercise table. Older saved sessions remain available through the history arrows.
+
+## Personalized muscle illustrations
+
+The six user-approved mascot illustrations appear in muscle-section headings and workout rotation cards. The transparent atlas in public/icons/muscle-atlas.png is displayed as CSS-positioned tiles; source image pixels are unchanged. Icon order and zero-based cell positions are documented in public/icons/manifest.json. A 56-icon PNG atlas pack (six muscle icons and fifty action variants) is available at icons/lift-journal-icon-pack.zip. The action atlas and downloadable ZIP are excluded from offline precaching to avoid unnecessary mobile downloads.

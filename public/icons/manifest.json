@@ -1,0 +1,244 @@
+{
+  "muscles": {
+    "file": "muscle-atlas.png",
+    "columns": 3,
+    "rows": 2,
+    "cellWidth": 512,
+    "cellHeight": 512,
+    "tiles": {
+      "shoulders": {
+        "column": 0,
+        "row": 0
+      },
+      "legs": {
+        "column": 1,
+        "row": 0
+      },
+      "back": {
+        "column": 2,
+        "row": 0
+      },
+      "triceps": {
+        "column": 0,
+        "row": 1
+      },
+      "biceps": {
+        "column": 1,
+        "row": 1
+      },
+      "chest": {
+        "column": 2,
+        "row": 1
+      }
+    }
+  },
+  "actions": {
+    "file": "action-atlas.png",
+    "columns": 5,
+    "rows": 10,
+    "width": 887,
+    "height": 1774,
+    "tiles": {
+      "home": {
+        "column": 0,
+        "row": 0
+      },
+      "start-workout": {
+        "column": 1,
+        "row": 0
+      },
+      "new-workout": {
+        "column": 2,
+        "row": 0
+      },
+      "add-exercise": {
+        "column": 3,
+        "row": 0
+      },
+      "save-workout": {
+        "column": 4,
+        "row": 0
+      },
+      "edit-workout": {
+        "column": 0,
+        "row": 1
+      },
+      "delete-workout": {
+        "column": 1,
+        "row": 1
+      },
+      "remove-exercise": {
+        "column": 2,
+        "row": 1
+      },
+      "undo": {
+        "column": 3,
+        "row": 1
+      },
+      "restore-exercise": {
+        "column": 4,
+        "row": 1
+      },
+      "history": {
+        "column": 0,
+        "row": 2
+      },
+      "calendar": {
+        "column": 1,
+        "row": 2
+      },
+      "search": {
+        "column": 2,
+        "row": 2
+      },
+      "settings": {
+        "column": 3,
+        "row": 2
+      },
+      "profile": {
+        "column": 4,
+        "row": 2
+      },
+      "previous-workout": {
+        "column": 0,
+        "row": 3
+      },
+      "next-workout": {
+        "column": 1,
+        "row": 3
+      },
+      "confirm": {
+        "column": 2,
+        "row": 3
+      },
+      "cancel": {
+        "column": 3,
+        "row": 3
+      },
+      "filter": {
+        "column": 4,
+        "row": 3
+      },
+      "walking": {
+        "column": 0,
+        "row": 4
+      },
+      "running": {
+        "column": 1,
+        "row": 4
+      },
+      "spinning": {
+        "column": 2,
+        "row": 4
+      },
+      "cycling": {
+        "column": 3,
+        "row": 4
+      },
+      "swimming": {
+        "column": 4,
+        "row": 4
+      },
+      "rowing": {
+        "column": 0,
+        "row": 5
+      },
+      "elliptical": {
+        "column": 1,
+        "row": 5
+      },
+      "stairs": {
+        "column": 2,
+        "row": 5
+      },
+      "hiking": {
+        "column": 3,
+        "row": 5
+      },
+      "jump-rope": {
+        "column": 4,
+        "row": 5
+      },
+      "personal-record": {
+        "column": 0,
+        "row": 6
+      },
+      "progress": {
+        "column": 1,
+        "row": 6
+      },
+      "streak": {
+        "column": 2,
+        "row": 6
+      },
+      "training-volume": {
+        "column": 3,
+        "row": 6
+      },
+      "completed-set": {
+        "column": 4,
+        "row": 6
+      },
+      "squat": {
+        "column": 0,
+        "row": 7
+      },
+      "deadlift": {
+        "column": 1,
+        "row": 7
+      },
+      "bench-press": {
+        "column": 2,
+        "row": 7
+      },
+      "pull-up": {
+        "column": 3,
+        "row": 7
+      },
+      "shoulder-press": {
+        "column": 4,
+        "row": 7
+      },
+      "biceps-curl": {
+        "column": 0,
+        "row": 8
+      },
+      "triceps-pushdown": {
+        "column": 1,
+        "row": 8
+      },
+      "lateral-raise": {
+        "column": 2,
+        "row": 8
+      },
+      "calf-raise": {
+        "column": 3,
+        "row": 8
+      },
+      "lunges": {
+        "column": 4,
+        "row": 8
+      },
+      "rest": {
+        "column": 0,
+        "row": 9
+      },
+      "stretching": {
+        "column": 1,
+        "row": 9
+      },
+      "hydration": {
+        "column": 2,
+        "row": 9
+      },
+      "recovery": {
+        "column": 3,
+        "row": 9
+      },
+      "celebrate": {
+        "column": 4,
+        "row": 9
+      }
+    }
+  }
+}

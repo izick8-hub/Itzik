@@ -1525,3 +1525,99 @@ html {
 .workout-action button {
   scroll-margin-bottom: calc(110px + env(safe-area-inset-bottom, 0px));
 }
+.muscle-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+.muscle-title h3 {
+  margin-top: 4px;
+}
+.muscle-title .eyebrow {
+  font-size: 8px;
+}
+.muscle-art {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  background: radial-gradient(ellipse at center, #b9f56a08 0%, transparent 75%);
+  isolation: isolate;
+}
+.muscle-art > img {
+  position: absolute;
+  width: 300%;
+  height: 200%;
+  max-width: none;
+  display: block;
+  filter: saturate(0.8);
+  pointer-events: none;
+}
+.muscle-art-small {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: none;
+}
+.split-mascots {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 2px;
+}
+.split-mascots .muscle-art + .muscle-art {
+  margin-left: -5px;
+}
+.split-card > .split-mascots {
+  flex: 0;
+}
+.muscle-header {
+  gap: 12px;
+}
+@media (min-width: 900px) {
+  .split-card {
+    position: relative;
+    padding-right: 62px;
+  }
+  .split-mascots {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    flex-direction: column;
+    gap: 0;
+  }
+  .split-mascots .muscle-art + .muscle-art {
+    margin-left: 0;
+    margin-top: -8px;
+  }
+  .split-card > svg {
+    display: none;
+  }
+}
+@media (max-width: 360px) {
+  .muscle-art {
+    width: 54px;
+    height: 54px;
+  }
+  .muscle-art-small {
+    width: 30px;
+    height: 30px;
+  }
+  .muscle-title {
+    gap: 10px;
+  }
+  .split-card {
+    gap: 10px;
+  }
+  .split-index {
+    min-width: 18px;
+  }
+  .split-card h3 {
+    font-size: 13px;
+  }
+}
