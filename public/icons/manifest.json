@@ -30,7 +30,8 @@
         "column": 2,
         "row": 1
       }
-    }
+    },
+    "outlineFile": "muscle-outline-atlas.png"
   },
   "actions": {
     "file": "action-atlas.png",

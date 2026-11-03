@@ -120,7 +120,7 @@ function MuscleArt({
       data-muscle={muscle}
     >
       <img
-        src="icons/muscle-atlas.png"
+        src="icons/muscle-outline-atlas.png"
         alt=""
         style={{ left: `${-column * 100}%`, top: `${-row * 100}%` }}
       />

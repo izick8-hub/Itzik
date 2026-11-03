@@ -79,3 +79,5 @@ Exercise removal now supports immediate Undo and persistent Restore controls. Re
 ## Personalized muscle illustrations
 
 The six user-approved mascot illustrations appear in muscle-section headings and workout rotation cards. The transparent atlas in public/icons/muscle-atlas.png is displayed as CSS-positioned tiles; source image pixels are unchanged. Icon order and zero-based cell positions are documented in public/icons/manifest.json. A 56-icon PNG atlas pack (six muscle icons and fifty action variants) is available at icons/lift-journal-icon-pack.zip. The action atlas and downloadable ZIP are excluded from offline precaching to avoid unnecessary mobile downloads.
+
+Muscle artwork now uses muscle-outline-atlas.png: lime-green contours with transparent interiors and no colored skin fills or white sticker border. The original color variant is retained in the downloadable icon pack.

@@ -9,3 +9,5 @@ Action atlas: 5 columns × 10 rows. See manifest.json for the 50 semantic names 
 Display each tile in a square overflow-hidden viewport. Scale the muscle sheet to 300% width and 200% height; position left = -column × 100%, top = -row × 100%. Keep PNG transparency, preserve aspect ratio, and use restrained dark containers. The app uses 64px muscle illustrations and 36px day-card illustrations.
 
 The 50 action variants are included for future use; functional app buttons intentionally retain simple SVG icons for small-screen clarity.
+
+The app now displays muscle-outline-atlas.png: green contours with transparent interiors, in the same 3×2 tile order. The original color sheet remains included as an alternative.

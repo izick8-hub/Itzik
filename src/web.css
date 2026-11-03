@@ -1621,3 +1621,11 @@ html {
     font-size: 13px;
   }
 }
+
+/* Outline-only mascot art uses the page surface as its fill. */
+.muscle-art {
+  background: none;
+}
+.muscle-art > img {
+  filter: none;
+}
