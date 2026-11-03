@@ -73,3 +73,5 @@ Dashboard metrics use completed lifting sessions: all-time session count, consec
 Progression guidance is a general starting point: keep load and add a controlled rep, or consider a 2.5–5% increase after all equal-load sets reach 12 reps, only if technique felt controlled. It does not infer recovery, injuries, exertion, or equipment increments from missing data. Unequal-load sets and bodyweight exercises receive rep-focused guidance.
 
 Responsive browser checks cover 320, 390, 768 and 1440 pixel widths. The current workspace browser is Chromium; actual Safari device testing remains separate.
+
+Exercise removal now supports immediate Undo and persistent Restore controls. Removed selections keep their drafts and saved history. The New workout action creates a dated draft without replacing any unfinished draft and restores exercises from the last completed session; current and previous dates appear above each exercise table. Older saved sessions remain available through the history arrows.

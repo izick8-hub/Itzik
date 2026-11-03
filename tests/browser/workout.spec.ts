@@ -14,7 +14,10 @@ test("lifting history, day isolation, cardio and local persistence", async ({
   await page
     .getByRole("textbox", { name: "Search exercises" })
     .fill("Dumbbell Shoulder Press");
-  await page.getByRole("button", { name: /Dumbbell Shoulder Press/ }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: /Dumbbell Shoulder Press/ })
+    .click();
   for (let i = 1; i <= 3; i++) {
     await page
       .getByRole("textbox", {
@@ -41,7 +44,7 @@ test("lifting history, day isolation, cardio and local persistence", async ({
   await page.screenshot({ path: "/tmp/lift-journal-workout.png" });
   await page.getByText("Chest + Biceps Day", { exact: true }).click();
   await expect(
-    page.getByText("Dumbbell Shoulder Press", { exact: true }),
+    page.getByRole("heading", { name: "Dumbbell Shoulder Press", exact: true }),
   ).toHaveCount(0);
   await page.getByRole("button", { name: "Cardio", exact: true }).click();
   await page
@@ -254,7 +257,7 @@ test("minus removes only the selected exercise and keeps history when re-added",
     })
     .click();
   await expect(
-    page.getByText("Dumbbell Shoulder Press", { exact: true }),
+    page.getByRole("heading", { name: "Dumbbell Shoulder Press", exact: true }),
   ).toHaveCount(0);
   await expect(
     page.getByRole("button", {
@@ -264,7 +267,7 @@ test("minus removes only the selected exercise and keeps history when re-added",
   ).toBeVisible();
   await page.reload();
   await expect(
-    page.getByText("Dumbbell Shoulder Press", { exact: true }),
+    page.getByRole("heading", { name: "Dumbbell Shoulder Press", exact: true }),
   ).toHaveCount(0);
   const stored = await page.evaluate(() =>
     JSON.parse(localStorage.getItem("lift-journal:v1")!),
@@ -282,7 +285,10 @@ test("minus removes only the selected exercise and keeps history when re-added",
   await page
     .getByRole("textbox", { name: "Search exercises" })
     .fill("Dumbbell Shoulder Press");
-  await page.getByRole("button", { name: /Dumbbell Shoulder Press/ }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: /Dumbbell Shoulder Press/ })
+    .click();
   await expect(page.getByText("20 × 12", { exact: true })).toBeVisible();
   await expect(
     page.getByRole("textbox", {
@@ -290,4 +296,148 @@ test("minus removes only the selected exercise and keeps history when re-added",
       exact: true,
     }),
   ).toHaveValue("20");
+});
+
+test("removed exercises support immediate Undo and persistent Restore after reload", async ({
+  page,
+}) => {
+  await page.goto("./");
+  await page
+    .getByRole("button", { name: "Weight-lifting", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "+ Exercise", exact: true })
+    .nth(1)
+    .click();
+  await page
+    .getByRole("textbox", { name: "Search exercises" })
+    .fill("Dumbbell Shoulder Press");
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: /Dumbbell Shoulder Press/ })
+    .click();
+  const weight = page.getByRole("textbox", {
+    name: "Dumbbell Shoulder Press set 1 weight in kilograms",
+    exact: true,
+  });
+  await weight.fill("20");
+  const remove = page.getByRole("button", {
+    name: "Remove Dumbbell Shoulder Press from Shoulders",
+    exact: true,
+  });
+  await remove.click();
+  await page.getByRole("button", { name: "Undo", exact: true }).click();
+  await expect(weight).toHaveValue("20");
+  await remove.click();
+  await page
+    .getByRole("button", { name: "Dismiss removal notification", exact: true })
+    .click();
+  await page.reload();
+  await page
+    .getByRole("button", {
+      name: "Restore Dumbbell Shoulder Press",
+      exact: true,
+    })
+    .click();
+  await expect(weight).toHaveValue("20");
+});
+test("plus opens another dated workout with the last exercises and saves a second independent session", async ({
+  page,
+}) => {
+  await page.goto("./");
+  await page
+    .getByRole("button", { name: "Weight-lifting", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "+ Exercise", exact: true })
+    .nth(1)
+    .click();
+  await page
+    .getByRole("textbox", { name: "Search exercises" })
+    .fill("Dumbbell Shoulder Press");
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: /Dumbbell Shoulder Press/ })
+    .click();
+  await page.getByRole("button", { name: "New workout", exact: true }).click();
+  for (let i = 1; i <= 3; i++) {
+    await page
+      .getByRole("textbox", {
+        name: `Dumbbell Shoulder Press set ${i} weight in kilograms`,
+        exact: true,
+      })
+      .fill("20");
+    await page
+      .getByRole("textbox", {
+        name: `Dumbbell Shoulder Press set ${i} reps`,
+        exact: true,
+      })
+      .fill("10");
+  }
+  await page
+    .getByRole("button", { name: "Finish & save workout", exact: true })
+    .click();
+  await expect(
+    page.getByText("1 workouts saved", { exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", {
+      name: "Remove Dumbbell Shoulder Press from Shoulders",
+      exact: true,
+    })
+    .click();
+  await page.getByRole("button", { name: "New workout", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Dumbbell Shoulder Press", exact: true }),
+  ).toBeVisible();
+  await expect(page.locator(".session-columns time")).toHaveCount(2);
+  const firstWeight = page.getByRole("textbox", {
+    name: "Dumbbell Shoulder Press set 1 weight in kilograms",
+    exact: true,
+  });
+  await expect(firstWeight).toHaveValue("");
+  await firstWeight.fill("22");
+  await page
+    .getByRole("button", {
+      name: "Start new workout for Dumbbell Shoulder Press",
+      exact: true,
+    })
+    .click();
+  await expect(firstWeight).toHaveValue("22");
+  for (let i = 1; i <= 3; i++) {
+    await page
+      .getByRole("textbox", {
+        name: `Dumbbell Shoulder Press set ${i} weight in kilograms`,
+        exact: true,
+      })
+      .fill("22");
+    await page
+      .getByRole("textbox", {
+        name: `Dumbbell Shoulder Press set ${i} reps`,
+        exact: true,
+      })
+      .fill("10");
+  }
+  await page
+    .getByRole("button", { name: "Finish & save workout", exact: true })
+    .click();
+  await expect(
+    page.getByText("2 workouts saved", { exact: true }),
+  ).toBeVisible();
+  await page.reload();
+  await expect(
+    page.getByText("2 workouts saved", { exact: true }),
+  ).toBeVisible();
+  const stored = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem("lift-journal:v1")!),
+  );
+  expect(
+    stored.sessions[0].map(
+      (s: any) => s.sets.Dumbbell_Shoulder_Press[0].weight,
+    ),
+  ).toEqual(["20", "22"]);
+  expect(new Set(stored.sessions[0].map((s: any) => s.id)).size).toBe(2);
+  expect(
+    stored.sessions[0].every((s: any) => Number.isFinite(Date.parse(s.date))),
+  ).toBe(true);
 });

@@ -1418,3 +1418,110 @@ p {
     font-size: 14px;
   }
 }
+.new-session-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+.new-session-bar strong {
+  display: block;
+  margin: 5px 0;
+  font-size: 18px;
+}
+.new-session-bar .secondary {
+  flex-shrink: 0;
+}
+.removed-exercises {
+  padding: 14px;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+}
+.removed-exercises > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.removed-exercises .secondary {
+  padding: 8px 12px;
+  font-size: 11px;
+  min-height: 44px;
+}
+.session-columns {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 2fr) minmax(0, 1.1fr) 44px;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.session-columns > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.session-columns time {
+  font-size: 11px;
+}
+.session-columns .eyebrow {
+  font-size: 8px;
+}
+.undo-removal {
+  position: fixed;
+  bottom: calc(90px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(calc(100% - 28px), 540px);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid #b9f56a40;
+  background: #22321f;
+  color: var(--text);
+  border-radius: 12px;
+  z-index: 40;
+  box-shadow: 0 8px 28px #0006;
+  font-size: 12px;
+}
+.undo-removal > span {
+  flex: 1;
+}
+.undo-removal button {
+  min-height: 44px;
+  min-width: 44px;
+  color: var(--accent);
+  font-weight: 650;
+}
+.undo-removal svg {
+  width: 16px;
+}
+@media (max-width: 400px) {
+  .new-session-bar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .session-columns {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 44px;
+  }
+  .session-columns > span {
+    display: none;
+  }
+  .session-columns time {
+    font-size: 10px;
+  }
+}
+html {
+  scroll-padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px));
+}
+.set-row input,
+.workout-action button {
+  scroll-margin-bottom: calc(110px + env(safe-area-inset-bottom, 0px));
+}

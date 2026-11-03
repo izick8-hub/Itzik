@@ -142,6 +142,12 @@ export default function App() {
   const [minutes, setMinutes] = useState("");
   const [distance, setDistance] = useState("");
   const [notice, setNotice] = useState("");
+  const [lastRemoved, setLastRemoved] = useState<{
+    day: number;
+    group: string;
+    id: string;
+    index: number;
+  } | null>(null);
   const main = useRef<HTMLElement>(null);
   useEffect(() => {
     try {
@@ -209,6 +215,112 @@ export default function App() {
   function start(d: number) {
     setDay(d);
     setTab("Weight-lifting");
+  }
+  function removeExercise(group: string, id: string) {
+    const removed = {
+      day,
+      group,
+      id,
+      index: (data.selections[keyFor(day, group)] || []).indexOf(id),
+    };
+    setLastRemoved(removed);
+    setData((d) => ({
+      ...d,
+      selections: {
+        ...d.selections,
+        [keyFor(day, group)]: (d.selections[keyFor(day, group)] || []).filter(
+          (x) => x !== id,
+        ),
+      },
+      removedExercises: [
+        ...(d.removedExercises || []).filter(
+          (x) => !(x.day === day && x.group === group && x.id === id),
+        ),
+        removed,
+      ],
+    }));
+  }
+  function restoreExercise(removed: {
+    day: number;
+    group: string;
+    id: string;
+    index: number;
+  }) {
+    setData((d) => {
+      const key = keyFor(removed.day, removed.group);
+      const selected = [...(d.selections[key] || [])];
+      if (!selected.includes(removed.id))
+        selected.splice(
+          Math.min(removed.index, selected.length),
+          0,
+          removed.id,
+        );
+      return {
+        ...d,
+        selections: { ...d.selections, [key]: selected },
+        removedExercises: (d.removedExercises || []).filter(
+          (x) =>
+            !(
+              x.day === removed.day &&
+              x.group === removed.group &&
+              x.id === removed.id
+            ),
+        ),
+      };
+    });
+    setLastRemoved(null);
+  }
+  function newWorkout() {
+    if (data.drafts[day]) {
+      setNotice(
+        "Your current workout is already open. Finish it before starting another.",
+      );
+      return;
+    }
+    setData((d) => {
+      const selections = { ...d.selections };
+      const latest = (d.sessions[day] || []).at(-1);
+      for (const id of Object.keys(latest?.sets || {})) {
+        if (
+          GROUPS[day].some((g) =>
+            (selections[keyFor(day, g)] || []).includes(id),
+          )
+        )
+          continue;
+        const exercise = catalog.find((e) => e.id === id);
+        const group =
+          GROUPS[day].find((g) =>
+            exercise?.primaryMuscles.some((m) => muscles[g].includes(m)),
+          ) ||
+          GROUPS[day].find((g) =>
+            exercise?.secondaryMuscles.some((m) => muscles[g].includes(m)),
+          ) ||
+          GROUPS[day][0];
+        const key = keyFor(day, group);
+        selections[key] = [...(selections[key] || []), id];
+      }
+      const now = new Date().toISOString();
+      return {
+        ...d,
+        selections,
+        removedExercises: (d.removedExercises || []).filter(
+          (x) =>
+            x.day !== day ||
+            !GROUPS[day].some((g) =>
+              (selections[keyFor(day, g)] || []).includes(x.id),
+            ),
+        ),
+        drafts: {
+          ...d.drafts,
+          [day]: { id: crypto.randomUUID(), date: now, sets: {} },
+        },
+      };
+    });
+    setHistoryIndex({});
+    setLastRemoved(null);
+    setNotice(
+      "New dated workout opened. Your previous results stay beside it.",
+    );
   }
   function updateSet(
     id: string,
@@ -374,10 +486,7 @@ export default function App() {
           <span /> ON YOUR DEVICE
         </span>
       </header>
-      <main
-        ref={main}
-        className="main-content"
-      >
+      <main ref={main} className="main-content">
         {error && (
           <div role="alert" className="error">
             {error}
@@ -590,6 +699,21 @@ export default function App() {
                 {(data.sessions[day] || []).length} workouts saved
               </span>
             </div>
+            <div className="new-session-bar">
+              <div>
+                <p className="eyebrow">
+                  {draft ? "CURRENT WORKOUT" : "READY FOR YOUR NEXT SESSION"}
+                </p>
+                <strong>{date(draft?.date || new Date().toISOString())}</strong>
+                <p className="supporting">
+                  New sets beside your saved results. Exercises carry over.
+                </p>
+              </div>
+              <button className="secondary" onClick={newWorkout}>
+                <Icon type="plus" />
+                New workout
+              </button>
+            </div>
             {GROUPS[day].map((group) => (
               <section className="muscle-section" key={group}>
                 <div className="muscle-header">
@@ -624,6 +748,27 @@ export default function App() {
                     <Icon type="chevron" />
                   </button>
                 )}
+                {(data.removedExercises || []).filter(
+                  (x) => x.day === day && x.group === group,
+                ).length > 0 && (
+                  <div className="removed-exercises">
+                    <p className="eyebrow">REMOVED EXERCISES · HISTORY KEPT</p>
+                    {(data.removedExercises || [])
+                      .filter((x) => x.day === day && x.group === group)
+                      .map((x) => (
+                        <div key={x.id}>
+                          <span>{name(x.id)}</span>
+                          <button
+                            className="secondary"
+                            onClick={() => restoreExercise(x)}
+                            aria-label={`Restore ${name(x.id)}`}
+                          >
+                            Restore
+                          </button>
+                        </div>
+                      ))}
+                  </div>
+                )}
                 {(data.selections[keyFor(day, group)] || []).map((id) => {
                   const e = catalog.find((e) => e.id === id);
                   if (!e) return null;
@@ -653,22 +798,36 @@ export default function App() {
                         <button
                           className="icon-button remove"
                           aria-label={`Remove ${e.name} from ${group}`}
-                          onClick={() =>
-                            setData((d) => ({
-                              ...d,
-                              selections: {
-                                ...d.selections,
-                                [keyFor(day, group)]: (
-                                  d.selections[keyFor(day, group)] || []
-                                ).filter((x) => x !== id),
-                              },
-                            }))
-                          }
+                          onClick={() => removeExercise(group, id)}
                         >
                           <Icon type="minus" />
                         </button>
                       </header>
                       <div className="set-table">
+                        <div className="session-columns">
+                          <span />
+                          <div>
+                            <span className="eyebrow">
+                              {draft ? "CURRENT WORKOUT" : "NEW WORKOUT"}
+                            </span>
+                            <time>
+                              {date(draft?.date || new Date().toISOString())}
+                            </time>
+                          </div>
+                          <div>
+                            <span className="eyebrow">
+                              {previous ? "SAVED WORKOUT" : "NO HISTORY YET"}
+                            </span>
+                            {previous && <time>{date(previous.date)}</time>}
+                          </div>
+                          <button
+                            className="icon-button"
+                            aria-label={`Start new workout for ${e.name}`}
+                            onClick={newWorkout}
+                          >
+                            <Icon type="plus" />
+                          </button>
+                        </div>
                         <div className="set-table-heading">
                           <span>SET</span>
                           <span>
@@ -899,21 +1058,21 @@ export default function App() {
             </section>
           </>
         )}
-      {tab === "Weight-lifting" && (
-        <div className="workout-action">
-          <div>
-            <strong>
-              {completed}
-              <span> / {ids.length * 3} sets</span>
-            </strong>
-            <small>{DAYS[day].replace(" Day", "")}</small>
+        {tab === "Weight-lifting" && (
+          <div className="workout-action">
+            <div>
+              <strong>
+                {completed}
+                <span> / {ids.length * 3} sets</span>
+              </strong>
+              <small>{DAYS[day].replace(" Day", "")}</small>
+            </div>
+            <button className="primary" onClick={finish}>
+              <Icon type="check" />
+              Finish &amp; save workout
+            </button>
           </div>
-          <button className="primary" onClick={finish}>
-            <Icon type="check" />
-            Finish &amp; save workout
-          </button>
-        </div>
-      )}
+        )}
         <footer className="privacy-note">
           <span /> SAVED ON THIS DEVICE · NO ACCOUNT REQUIRED
         </footer>
@@ -935,6 +1094,18 @@ export default function App() {
           </button>
         ))}
       </nav>
+      {lastRemoved && (
+        <div className="undo-removal" role="status">
+          <span>{name(lastRemoved.id)} removed</span>
+          <button onClick={() => restoreExercise(lastRemoved)}>Undo</button>
+          <button
+            aria-label="Dismiss removal notification"
+            onClick={() => setLastRemoved(null)}
+          >
+            <Icon type="close" />
+          </button>
+        </div>
+      )}
       {notice && (
         <div className="toast" role="status">
           <Icon type="check" />
@@ -988,6 +1159,14 @@ export default function App() {
                     const k = keyFor(day, picker);
                     return {
                       ...d,
+                      removedExercises: (d.removedExercises || []).filter(
+                        (x) =>
+                          !(
+                            x.day === day &&
+                            x.group === picker &&
+                            x.id === e.id
+                          ),
+                      ),
                       selections: {
                         ...d.selections,
                         [k]: Array.from(
@@ -997,6 +1176,7 @@ export default function App() {
                     };
                   });
                   setPicker(null);
+                  if (lastRemoved?.id === e.id) setLastRemoved(null);
                 }}
               >
                 <Photo id={e.id} />

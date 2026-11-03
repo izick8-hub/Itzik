@@ -36,7 +36,10 @@ test("premium dashboard and logging fit phone, tablet and desktop widths", async
   await page
     .getByRole("textbox", { name: "Search exercises" })
     .fill("Dumbbell Shoulder Press");
-  await page.getByRole("button", { name: /Dumbbell Shoulder Press/ }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: /Dumbbell Shoulder Press/ })
+    .click();
   for (const width of [320, 390, 768, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     expect(
@@ -55,7 +58,9 @@ test("progress compares real stored sessions and long histories stay within the 
   page,
 }) => {
   await page.goto("./");
-  await page.waitForFunction(() => localStorage.getItem('lift-journal:v1') !== null);
+  await page.waitForFunction(
+    () => localStorage.getItem("lift-journal:v1") !== null,
+  );
   await page.evaluate(() => {
     const sets = (w: string, r: string) =>
       Array.from({ length: 3 }, () => ({ weight: w, reps: r }));
@@ -116,42 +121,110 @@ test("progress compares real stored sessions and long histories stay within the 
     .screenshot({ path: "/tmp/lift-exercise-new.png" });
 });
 
-test('save action stays below exercises and never floats over inputs on a short phone screen', async ({page})=>{
- await page.setViewportSize({width:390,height:560});
- await page.goto('./');
- await page.getByRole('button',{name:'Weight-lifting',exact:true}).click();
- const save=page.getByRole('button',{name:'Finish & save workout',exact:true});
- expect(await page.locator('.workout-action').evaluate(e=>getComputedStyle(e).position)).toBe('static');
- await page.getByRole('button',{name:'+ Exercise',exact:true}).nth(1).click();
- await page.getByRole('textbox',{name:'Search exercises'}).fill('Dumbbell Shoulder Press');
- await page.getByRole('button',{name:/Dumbbell Shoulder Press/}).click();
- const lastInput=page.getByRole('textbox',{name:'Dumbbell Shoulder Press set 3 reps',exact:true});
- await lastInput.scrollIntoViewIfNeeded();
- await lastInput.fill('12');
- await expect(lastInput).toHaveValue('12');
- expect(await page.evaluate(()=>{const a=document.querySelector('.workout-action')!.getBoundingClientRect();const c=document.querySelector('.exercise-card')!.getBoundingClientRect();return a.top>=c.bottom})).toBe(true);
- await save.scrollIntoViewIfNeeded();
- await expect(save).toBeInViewport();
- expect(await save.evaluate(e=>{const r=e.getBoundingClientRect();const n=document.querySelector('.bottom-nav')!.getBoundingClientRect();return r.bottom<=n.top})).toBe(true);
+test("save action stays below exercises and never floats over inputs on a short phone screen", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 560 });
+  await page.goto("./");
+  await page
+    .getByRole("button", { name: "Weight-lifting", exact: true })
+    .click();
+  const save = page.getByRole("button", {
+    name: "Finish & save workout",
+    exact: true,
+  });
+  expect(
+    await page
+      .locator(".workout-action")
+      .evaluate((e) => getComputedStyle(e).position),
+  ).toBe("static");
+  await page
+    .getByRole("button", { name: "+ Exercise", exact: true })
+    .nth(1)
+    .click();
+  await page
+    .getByRole("textbox", { name: "Search exercises" })
+    .fill("Dumbbell Shoulder Press");
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: /Dumbbell Shoulder Press/ })
+    .click();
+  const lastInput = page.getByRole("textbox", {
+    name: "Dumbbell Shoulder Press set 3 reps",
+    exact: true,
+  });
+  await lastInput.scrollIntoViewIfNeeded();
+  await lastInput.fill("12");
+  await expect(lastInput).toHaveValue("12");
+  expect(
+    await page.evaluate(() => {
+      const a = document
+        .querySelector(".workout-action")!
+        .getBoundingClientRect();
+      const c = document
+        .querySelector(".exercise-card")!
+        .getBoundingClientRect();
+      return a.top >= c.bottom;
+    }),
+  ).toBe(true);
+  await page.evaluate(() =>
+    window.scrollTo(0, document.documentElement.scrollHeight),
+  );
+  await expect(save).toBeInViewport();
+  expect(
+    await save.evaluate((e) => {
+      const r = e.getBoundingClientRect();
+      const n = document.querySelector(".bottom-nav")!.getBoundingClientRect();
+      return r.bottom <= n.top;
+    }),
+  ).toBe(true);
 });
 
-test('touch swipes reach Shoulders and scrolling returns after closing the exercise picker',async({page,context})=>{
- await page.setViewportSize({width:393,height:650});
- await page.goto('./');
- await page.getByRole('button',{name:'Weight-lifting',exact:true}).click();
- expect(await page.evaluate(()=>getComputedStyle(document.body).overflowY)).not.toBe('hidden');
- const cdp=await context.newCDPSession(page);
- async function swipe(){
-  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:190,y:510}]});
-  for(let y=490;y>=150;y-=20){await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:190,y}]});await page.waitForTimeout(16);}
-  await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
- }
- await swipe();await swipe();
- expect(await page.evaluate(()=>window.scrollY)).toBeGreaterThan(150);
- await expect(page.getByRole('heading',{name:'Shoulders',exact:true})).toBeInViewport();
- await page.getByRole('button',{name:'+ Exercise',exact:true}).nth(1).click();
- await page.getByRole('button',{name:'Close dialog',exact:true}).click();
- expect(await page.evaluate(()=>getComputedStyle(document.body).overflowY)).not.toBe('hidden');
- await page.evaluate(()=>window.scrollTo(0,0));await swipe();
- expect(await page.evaluate(()=>window.scrollY)).toBeGreaterThan(100);
+test("touch swipes reach Shoulders and scrolling returns after closing the exercise picker", async ({
+  page,
+  context,
+}) => {
+  await page.setViewportSize({ width: 393, height: 650 });
+  await page.goto("./");
+  await page
+    .getByRole("button", { name: "Weight-lifting", exact: true })
+    .click();
+  expect(
+    await page.evaluate(() => getComputedStyle(document.body).overflowY),
+  ).not.toBe("hidden");
+  const cdp = await context.newCDPSession(page);
+  async function swipe() {
+    await cdp.send("Input.dispatchTouchEvent", {
+      type: "touchStart",
+      touchPoints: [{ x: 190, y: 510 }],
+    });
+    for (let y = 490; y >= 150; y -= 20) {
+      await cdp.send("Input.dispatchTouchEvent", {
+        type: "touchMove",
+        touchPoints: [{ x: 190, y }],
+      });
+      await page.waitForTimeout(16);
+    }
+    await cdp.send("Input.dispatchTouchEvent", {
+      type: "touchEnd",
+      touchPoints: [],
+    });
+  }
+  await swipe();
+  await swipe();
+  expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(150);
+  await expect(
+    page.getByRole("heading", { name: "Shoulders", exact: true }),
+  ).toBeInViewport();
+  await page
+    .getByRole("button", { name: "+ Exercise", exact: true })
+    .nth(1)
+    .click();
+  await page.getByRole("button", { name: "Close dialog", exact: true }).click();
+  expect(
+    await page.evaluate(() => getComputedStyle(document.body).overflowY),
+  ).not.toBe("hidden");
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await swipe();
+  expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(100);
 });
