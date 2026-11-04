@@ -38,9 +38,9 @@ Install **Expo Go** on your iPhone and scan the terminal QR code with the Camera
 - Today’s editable sets beside a selectable previous session, with older/newer controls and no horizontal scrolling.
 - Finish a workout to save a dated column. Partially entered workouts persist as drafts.
 - Cardio activity, duration in minutes, distance in kilometers, and activity history.
-- No rest timers or custom exercise creation.
+- No rest timers. Custom exercise creation and personal exercise names are supported on the website.
 
-Workout selections, drafts, completed sessions, and cardio entries persist across restarts. Removing the app can remove the local data; this version does not include backup, sync, or export. Exercise names are bundled for offline use. Demonstration photos currently load over HTTPS and require Internet access; unavailable photos display a fallback.
+Workout selections, drafts, completed sessions, and cardio entries persist across restarts. Removing the app can remove the local data; this version does not include backup, sync, or export. Exercise names and 873 catalog photos are bundled with the website. Viewed photos cache on demand for offline use. Three catalog entries have no source photo; custom exercises use a neutral placeholder. Failed photo loads offer a Retry action on exercise cards.
 
 ## Development checks
 
@@ -81,3 +81,5 @@ Exercise removal now supports immediate Undo and persistent Restore controls. Re
 The six user-approved mascot illustrations appear in muscle-section headings and workout rotation cards. The transparent atlas in public/icons/muscle-atlas.png is displayed as CSS-positioned tiles; source image pixels are unchanged. Icon order and zero-based cell positions are documented in public/icons/manifest.json. A 56-icon PNG atlas pack (six muscle icons and fifty action variants) is available at icons/lift-journal-icon-pack.zip. The action atlas and downloadable ZIP are excluded from offline precaching to avoid unnecessary mobile downloads.
 
 Muscle artwork now uses muscle-outline-atlas.png: lime-green contours with transparent interiors and no colored skin fills or white sticker border. The original color variant is retained in the downloadable icon pack.
+
+Exercise cards include Rename, which stores a personal name override while preserving the original exercise ID and all saved sets. The picker offers Add custom exercise; custom entries persist on this device and are grouped by the section in which they were created. Photo paths use src/photo-files.json and local public/exercise-photos files. Photos are excluded from bulk precaching; the service worker caches successfully viewed images in lift-journal-photos-v1. No image pixels have been altered.

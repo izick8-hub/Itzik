@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import catalog from "./src/exercises.json";
+import photoFiles from "./src/photo-files.json";
 import {
   DAYS,
   GROUPS,
@@ -36,7 +37,8 @@ const date = (d: string) =>
     day: "numeric",
     year: "numeric",
   });
-const name = (id: string) => catalog.find((e) => e.id === id)?.name || id;
+const catalogName = (id: string) =>
+  catalog.find((e) => e.id === id)?.name || id;
 const paths: Record<string, React.ReactNode> = {
   home: (
     <>
@@ -127,18 +129,40 @@ function MuscleArt({
     </span>
   );
 }
-function Photo({ id }: { id: string }) {
-  const e = catalog.find((e) => e.id === id);
+function Photo({
+  id,
+  label,
+  interactive = true,
+}: {
+  id: string;
+  label?: string;
+  interactive?: boolean;
+}) {
+  const file = (photoFiles as Record<string, string>)[id];
   const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   return (
     <div className="exercise-photo">
-      {e?.images[0] && !failed ? (
+      {file && !failed ? (
         <img
-          src={`https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/${e.images[0]}`}
-          alt={`${e.name} demonstration`}
+          src={`exercise-photos/${file}${attempt ? `?retry=${attempt}` : ""}`}
+          alt={`${label || catalogName(id)} demonstration`}
           loading="lazy"
+          decoding="async"
           onError={() => setFailed(true)}
         />
+      ) : file && interactive ? (
+        <button
+          className="photo-retry"
+          aria-label={`Retry photo for ${label || catalogName(id)}`}
+          onClick={() => {
+            setAttempt((n) => n + 1);
+            setFailed(false);
+          }}
+        >
+          <Icon type="lift" />
+          <span>Retry</span>
+        </button>
       ) : (
         <Icon type="lift" />
       )}
@@ -159,6 +183,11 @@ export default function App() {
   const [day, setDay] = useState(0);
   const [picker, setPicker] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [renaming, setRenaming] = useState<string | null>(null);
+  const [newName, setNewName] = useState("");
+  const [showCustom, setShowCustom] = useState(false);
+  const [customName, setCustomName] = useState("");
+  const [customEquipment, setCustomEquipment] = useState("body only");
   const [equipment, setEquipment] = useState("All");
   const [editing, setEditing] = useState<{
     day: number;
@@ -224,6 +253,63 @@ export default function App() {
     const t = setTimeout(() => setNotice(""), 3500);
     return () => clearTimeout(t);
   }, [notice]);
+  const name = (id: string) =>
+    data.exerciseNames?.[id] ||
+    data.customExercises?.find((e) => e.id === id)?.name ||
+    catalogName(id);
+  const exercises = [
+    ...catalog.map((e) => ({ ...e, name: name(e.id) })),
+    ...(data.customExercises || []).map((e) => ({
+      ...e,
+      name: name(e.id),
+      primaryMuscles: muscles[e.group] || [],
+      secondaryMuscles: [] as string[],
+      images: [] as string[],
+    })),
+  ];
+  function createCustom(event: React.FormEvent) {
+    event.preventDefault();
+    if (!picker) return;
+    if (!customName.trim()) {
+      window.alert("Enter an exercise name.");
+      return;
+    }
+    const exercise = {
+      id: `custom:${crypto.randomUUID()}`,
+      name: customName.trim(),
+      group: picker,
+      equipment: customEquipment,
+    };
+    setData((d) => ({
+      ...d,
+      customExercises: [...(d.customExercises || []), exercise],
+      selections: {
+        ...d.selections,
+        [keyFor(day, picker)]: [
+          ...(d.selections[keyFor(day, picker)] || []),
+          exercise.id,
+        ],
+      },
+    }));
+    setCustomName("");
+    setShowCustom(false);
+    setPicker(null);
+    setNotice("Custom exercise added to your list.");
+  }
+  function saveName(event: React.FormEvent) {
+    event.preventDefault();
+    if (!renaming) return;
+    if (!newName.trim()) {
+      window.alert("Enter an exercise name.");
+      return;
+    }
+    setData((d) => ({
+      ...d,
+      exerciseNames: { ...d.exerciseNames, [renaming]: newName.trim() },
+    }));
+    setRenaming(null);
+    setNotice("Exercise name updated. Your history stays linked.");
+  }
   const stats = summary(data);
   const draft = data.drafts[day];
   const ids = GROUPS[day].flatMap((g) => data.selections[keyFor(day, g)] || []);
@@ -233,7 +319,7 @@ export default function App() {
     0,
   );
   const options = picker
-    ? catalog.filter(
+    ? exercises.filter(
         (e) =>
           muscles[picker].some(
             (m) =>
@@ -318,7 +404,7 @@ export default function App() {
           )
         )
           continue;
-        const exercise = catalog.find((e) => e.id === id);
+        const exercise = exercises.find((e) => e.id === id);
         const group =
           GROUPS[day].find((g) =>
             exercise?.primaryMuscles.some((m) => muscles[g].includes(m)),
@@ -812,7 +898,7 @@ export default function App() {
                   </div>
                 )}
                 {(data.selections[keyFor(day, group)] || []).map((id) => {
-                  const e = catalog.find((e) => e.id === id);
+                  const e = exercises.find((e) => e.id === id);
                   if (!e) return null;
                   const history = (data.sessions[day] || [])
                     .filter((s) => s.sets[id])
@@ -830,12 +916,23 @@ export default function App() {
                   return (
                     <article className="exercise-card" key={id}>
                       <header className="exercise-header">
-                        <Photo id={id} />
+                        <Photo id={id} label={e.name} />
                         <div>
                           <p className="eyebrow">
                             {e.equipment || "BODYWEIGHT"}
                           </p>
                           <h3>{e.name}</h3>
+                          <button
+                            className="rename-exercise"
+                            aria-label={`Rename ${e.name}`}
+                            onClick={() => {
+                              setRenaming(id);
+                              setNewName(name(id));
+                            }}
+                          >
+                            <Icon type="edit" />
+                            Rename
+                          </button>
                         </div>
                         <button
                           className="icon-button remove"
@@ -1154,11 +1251,93 @@ export default function App() {
           {notice}
         </div>
       )}
+      {renaming && (
+        <Dialog title="Rename exercise" onClose={() => setRenaming(null)}>
+          <form onSubmit={saveName} className="custom-exercise-form">
+            <p className="supporting">
+              This changes its name in your list and history. Your saved sets
+              stay linked.
+            </p>
+            <label>
+              Exercise name
+              <input
+                aria-label="Exercise name"
+                autoFocus
+                maxLength={100}
+                required
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+              />
+            </label>
+            <div className="dialog-actions">
+              <button className="primary" type="submit">
+                Save name
+              </button>
+              <button
+                type="button"
+                className="secondary"
+                onClick={() => setRenaming(null)}
+              >
+                Cancel rename
+              </button>
+            </div>
+          </form>
+        </Dialog>
+      )}
       {picker && (
         <Dialog title={`${picker} exercises`} onClose={() => setPicker(null)}>
           <p className="supporting">
             Find your movement. Make it part of your session.
           </p>
+          <button
+            className="secondary custom-toggle"
+            onClick={() => {
+              setShowCustom((v) => !v);
+              setCustomName(query);
+            }}
+          >
+            <Icon type="plus" />
+            Add custom exercise
+          </button>
+          {showCustom && (
+            <form className="custom-exercise-form" onSubmit={createCustom}>
+              <h3>Add to {picker}</h3>
+              <label>
+                Exercise name
+                <input
+                  aria-label="Custom exercise name"
+                  maxLength={100}
+                  required
+                  value={customName}
+                  onChange={(e) => setCustomName(e.target.value)}
+                />
+              </label>
+              <label>
+                Equipment
+                <select
+                  aria-label="Custom exercise equipment"
+                  value={customEquipment}
+                  onChange={(e) => setCustomEquipment(e.target.value)}
+                >
+                  {[
+                    "body only",
+                    "barbell",
+                    "dumbbell",
+                    "cable",
+                    "machine",
+                    "bands",
+                    "kettlebells",
+                    "other",
+                  ].map((eq) => (
+                    <option key={eq}>{eq}</option>
+                  ))}
+                </select>
+              </label>
+              <button className="primary" type="submit">
+                Create exercise
+              </button>
+            </form>
+          )}
           <label className="search-box">
             <Icon type="search" />
             <input
@@ -1221,7 +1400,7 @@ export default function App() {
                   if (lastRemoved?.id === e.id) setLastRemoved(null);
                 }}
               >
-                <Photo id={e.id} />
+                <Photo id={e.id} label={e.name} interactive={false} />
                 <div>
                   <h3>{e.name}</h3>
                   <p>

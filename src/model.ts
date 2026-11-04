@@ -22,6 +22,13 @@ export type Cardio = {
   distance: string;
 };
 export type Data = {
+  exerciseNames?: Record<string, string>;
+  customExercises?: {
+    id: string;
+    name: string;
+    group: string;
+    equipment: string | null;
+  }[];
   removedExercises?: {
     day: number;
     group: string;

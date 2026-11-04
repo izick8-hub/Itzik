@@ -1629,3 +1629,72 @@ html {
 .muscle-art > img {
   filter: none;
 }
+.rename-exercise {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  padding: 8px 0;
+  min-height: 36px;
+}
+.rename-exercise svg {
+  width: 13px;
+  height: 13px;
+}
+.rename-exercise:hover {
+  color: var(--accent);
+}
+.custom-toggle {
+  width: 100%;
+  margin-bottom: 16px;
+}
+.custom-exercise-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+  margin-bottom: 18px;
+}
+.custom-exercise-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.custom-exercise-form select {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--secondary);
+  color: var(--text);
+  font: inherit;
+}
+.photo-retry {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  width: 100%;
+  height: 100%;
+  gap: 3px;
+  min-height: 44px;
+}
+.photo-retry span {
+  font-size: 9px;
+}
+.photo-retry svg {
+  width: 18px;
+  height: 18px;
+}
+
+.exercise-header h3,
+.exercise-options h3,
+.edit-exercise h3 {
+  overflow-wrap: anywhere;
+}
