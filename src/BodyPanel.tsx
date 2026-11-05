@@ -38,6 +38,9 @@ export default function BodyPanel({
   );
   const [targetFat, setTargetFat] = useState(goals.bodyFat?.toString() || "");
   const [error, setError] = useState("");
+  const [metricView, setMetricView] = useState<"snapshot" | "change">(
+    "snapshot",
+  );
   function add(e: React.FormEvent) {
     e.preventDefault();
     const w = Number(weight),
@@ -115,18 +118,37 @@ export default function BodyPanel({
           + Add check-in
         </button>
       </div>
-      <p className="supporting">
-        178 cm · male · age 31 at baseline · fat loss while preserving muscle
-      </p>
-      <p className="supporting">
-        Baseline: Nov 1, 2026 · Latest check-in: {day(latest.date)}
-      </p>
-      <div className="body-metrics">
+      <div className="body-record-context">
+        <span>178 cm · 31 at baseline · muscle-preserving fat loss</span>
+        <span>Baseline Nov 1 · Updated {day(latest.date)}</span>
+      </div>
+      <div className="body-console-bar">
+        <span className="console-indicator">
+          <span /> BODY TELEMETRY
+        </span>
+        <div className="metric-view-switch" aria-label="Body metric display">
+          <button
+            aria-pressed={metricView === "snapshot"}
+            onClick={() => setMetricView("snapshot")}
+          >
+            Snapshot
+          </button>
+          <button
+            aria-pressed={metricView === "change"}
+            onClick={() => setMetricView("change")}
+          >
+            Change %
+          </button>
+        </div>
+      </div>
+      <div className="body-metrics" key={metricView}>
         <div>
           <span className="eyebrow">BODY WEIGHT</span>
           <strong>
-            {n(latest.weight)}
-            <small>kg</small>
+            {metricView === "snapshot"
+              ? n(latest.weight)
+              : signed(percentChange(latest.weight, BASELINE.weight))}
+            <small>{metricView === "snapshot" ? "kg" : "change"}</small>
           </strong>
           <p>
             {signed(percentChange(latest.weight, BASELINE.weight))} since
@@ -136,8 +158,18 @@ export default function BodyPanel({
         <div>
           <span className="eyebrow">BODY FAT</span>
           <strong>
-            {latest.bodyFat !== undefined ? n(latest.bodyFat) : "—"}
-            <small>{latest.bodyFat !== undefined ? "%" : ""}</small>
+            {latest.bodyFat !== undefined
+              ? metricView === "snapshot"
+                ? n(latest.bodyFat)
+                : signed(percentChange(latest.bodyFat, BASELINE.bodyFat!))
+              : "—"}
+            <small>
+              {latest.bodyFat !== undefined
+                ? metricView === "snapshot"
+                  ? "%"
+                  : "relative change"
+                : ""}
+            </small>
           </strong>
           <p>
             {latest.bodyFat !== undefined
@@ -148,8 +180,18 @@ export default function BodyPanel({
         <div>
           <span className="eyebrow">SKELETAL MUSCLE</span>
           <strong>
-            {latest.muscleMass !== undefined ? n(latest.muscleMass) : "—"}
-            <small>{latest.muscleMass !== undefined ? "kg" : ""}</small>
+            {latest.muscleMass !== undefined
+              ? metricView === "snapshot"
+                ? n(latest.muscleMass)
+                : signed(percentChange(latest.muscleMass, BASELINE.muscleMass!))
+              : "—"}
+            <small>
+              {latest.muscleMass !== undefined
+                ? metricView === "snapshot"
+                  ? "kg"
+                  : "change"
+                : ""}
+            </small>
           </strong>
           <p>
             {latest.muscleMass !== undefined
@@ -251,6 +293,20 @@ export default function BodyPanel({
                 : null;
             return (
               <div key={g.key} className="body-target">
+                <div className="goal-orbit" aria-hidden="true">
+                  <svg viewBox="0 0 80 80">
+                    <circle className="orbit-track" cx="40" cy="40" r="33" />
+                    <circle
+                      className="orbit-progress"
+                      cx="40"
+                      cy="40"
+                      r="33"
+                      pathLength="100"
+                      strokeDasharray={`${Math.min(100, Math.max(0, pct ?? 0))} 100`}
+                    />
+                  </svg>
+                  <span>{pct === null ? "—" : `${n(pct)}%`}</span>
+                </div>
                 <p>
                   {g.label} target{" "}
                   <strong>
@@ -269,9 +325,7 @@ export default function BodyPanel({
                       max={100}
                       value={Math.min(100, Math.max(0, pct))}
                     />
-                    <small>
-                      {n(pct)}% of the change from baseline to target
-                    </small>
+                    <small>{n(pct)}% toward target from Nov 1</small>
                   </>
                 )}
               </div>

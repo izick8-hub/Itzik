@@ -32,7 +32,9 @@ export const BASELINE: BodyMeasurement = {
 export const percentChange = (current: number, previous: number) =>
   previous > 0 ? ((current - previous) / previous) * 100 : null;
 export function goalProgress(current: number, start: number, target: number) {
-  return target === start ? null : ((current - start) / (target - start)) * 100;
+  if (target === start) return null;
+  const value = ((current - start) / (target - start)) * 100;
+  return Object.is(value, -0) ? 0 : value;
 }
 export function suggestedWeight(
   previous: SetEntry[],

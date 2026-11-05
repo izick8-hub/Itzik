@@ -1939,3 +1939,638 @@ html {
 .scan-details[open] > .footnote {
   margin: 12px 0;
 }
+/* Machined surfaces: focused light, no ambient animation loops. */
+.app-shell {
+  background:
+    radial-gradient(ellipse at 85% 5%, #aab8ac08, transparent 32%),
+    radial-gradient(ellipse at 0% 40%, #b9f56a03, transparent 40%);
+}
+.topbar {
+  border-bottom: 1px solid #ffffff06;
+}
+.brand-mark {
+  background: linear-gradient(140deg, #d6ff9a, #a6d85e);
+  box-shadow:
+    inset 0 1px 1px #fff8,
+    0 3px 12px #0004;
+}
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  column-gap: 22px;
+  align-items: center;
+  background: linear-gradient(
+    125deg,
+    #2c352e 0%,
+    #1b231e 25%,
+    #111713 62%,
+    #242d27 100%
+  );
+  border-color: #dae7d222;
+  box-shadow:
+    inset 0 1px 0 #fff2,
+    inset 0 -1px 0 #000b,
+    0 16px 38px #0003;
+}
+.hero-line {
+  grid-column: 1/-1;
+}
+.hero > .eyebrow,
+.hero > h2,
+.hero > .supporting {
+  grid-column: 1;
+}
+.hero > h2 {
+  background: linear-gradient(160deg, #fff, #c2cec0);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+.hero-cta {
+  grid-column: 1;
+}
+.hero-decoration {
+  opacity: 0.13;
+}
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 15%,
+    #f5fff30a 45%,
+    transparent 60%
+  );
+  transform: translateX(-120%);
+  pointer-events: none;
+}
+.training-dial {
+  grid-column: 2;
+  grid-row: 2/6;
+  width: 100%;
+  max-width: 204px;
+  justify-self: center;
+  position: relative;
+  z-index: 1;
+  user-select: none;
+}
+.dial-bezel {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  padding: 10px;
+  position: relative;
+  background: conic-gradient(
+    from 30deg,
+    #626c60,
+    #171e19 13%,
+    #697566 25%,
+    #252d26 40%,
+    #121914 55%,
+    #717a6d 75%,
+    #1b231c 90%,
+    #626c60
+  );
+  box-shadow:
+    0 12px 24px #0007,
+    inset 0 1px 1px #ffffff40,
+    0 0 0 1px #ffffff15;
+}
+.dial-bezel::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 25%, #34402e, #101610 75%);
+  border: 1px solid #ffffff20;
+  box-shadow: inset 0 0 18px #0008;
+}
+.dial-ticks {
+  position: absolute;
+  inset: 10px;
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    from -120deg,
+    #d9e3d455 0deg 1.5deg,
+    transparent 1.5deg 12deg
+  );
+  mask: radial-gradient(circle, transparent 58%, #000 59% 65%, transparent 66%);
+  -webkit-mask: radial-gradient(
+    circle,
+    transparent 58%,
+    #000 59% 65%,
+    transparent 66%
+  );
+}
+.dial-needle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 40%;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--accent);
+  transform-origin: 0 50%;
+  transform: rotate(var(--dial-angle));
+  box-shadow: 0 0 6px #b9f56a25;
+}
+.dial-hub {
+  position: absolute;
+  inset: 22%;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #343f32, #131b14 65%);
+  border: 1px solid #c5d3bf20;
+  box-shadow:
+    0 5px 12px #0005,
+    inset 0 1px 0 #ffffff20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 5px;
+}
+.dial-hub > span {
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+}
+.dial-hub strong {
+  font-size: 40px;
+  font-weight: 500;
+  letter-spacing: -0.05em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--accent);
+}
+.dial-hub small {
+  font-size: 6px;
+  letter-spacing: 0.07em;
+  color: #8a9a84;
+}
+.training-dial input[type="range"] {
+  display: block;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 44px;
+  margin: 8px 0 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  outline-offset: 0;
+  cursor: ew-resize;
+  accent-color: var(--accent);
+}
+.training-dial input[type="range"]::-webkit-slider-runnable-track {
+  height: 2px;
+  background: linear-gradient(90deg, #c2d8ae30, #b9f56a66, #c2d8ae30);
+  border-radius: 2px;
+}
+.training-dial input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  margin-top: -8px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #cddcc1, #65745d);
+  box-shadow:
+    0 2px 5px #0006,
+    inset 0 1px 1px #fff8;
+  border: 2px solid #192118;
+}
+.training-dial input[type="range"]::-moz-range-track {
+  height: 2px;
+  background: #b9f56a66;
+}
+.training-dial input[type="range"]::-moz-range-thumb {
+  height: 16px;
+  width: 16px;
+  border: 2px solid #192118;
+  background: #a8b79b;
+  border-radius: 50%;
+}
+.dial-stops {
+  display: flex;
+  justify-content: space-between;
+  font-size: 8px;
+  color: #84907e;
+  letter-spacing: 0.1em;
+  margin-top: -5px;
+  padding: 0 5px;
+}
+.body-panel {
+  position: relative;
+  background: linear-gradient(
+    145deg,
+    #222b24 0%,
+    #151c17 25%,
+    #121813 75%,
+    #202820
+  );
+  border: 1px solid #d7e5d018;
+  box-shadow:
+    inset 0 1px 0 #ffffff12,
+    0 12px 32px #0002;
+  overflow: hidden;
+}
+.body-panel::before {
+  content: "";
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #d7e5d050, transparent);
+  pointer-events: none;
+}
+.body-panel > .section-title h2 {
+  font-size: 28px;
+  letter-spacing: -0.055em;
+}
+.body-console-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.console-indicator {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  color: #8d9c87;
+}
+.console-indicator > span {
+  height: 4px;
+  width: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px #b9f56a0b;
+}
+.metric-view-switch {
+  display: flex;
+  padding: 3px;
+  background: #0b100c;
+  border: 1px solid #ffffff0a;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+.metric-view-switch button {
+  font-size: 10px;
+  padding: 9px 12px;
+  min-height: 36px;
+  border-radius: 6px;
+  color: var(--muted);
+}
+.metric-view-switch button[aria-pressed="true"] {
+  background: linear-gradient(#303e2a, #22301d);
+  box-shadow: inset 0 1px 0 #ffffff13;
+  color: #d6f4bd;
+}
+.body-metrics {
+  gap: 10px;
+  margin-top: 16px;
+}
+.body-metrics > div {
+  position: relative;
+  border: 1px solid #ffffff08;
+  background: linear-gradient(145deg, #1c251d, #0c120e);
+  box-shadow: inset 0 1px 0 #ffffff0a;
+}
+.body-metrics > div::before {
+  content: "";
+  position: absolute;
+  top: 16px;
+  left: 0;
+  height: 20px;
+  width: 2px;
+  border-radius: 3px;
+  background: linear-gradient(transparent, #b9f56a90, transparent);
+}
+.body-metrics strong {
+  font-size: 36px;
+  font-weight: 450;
+  letter-spacing: -0.065em;
+  color: #e5eddf;
+}
+.body-metrics strong small {
+  font-size: 10px;
+  letter-spacing: 0;
+  color: #84927f;
+}
+.body-goal-heading {
+  margin-top: 20px;
+}
+.body-target {
+  position: relative;
+  padding: 20px 108px 20px 18px;
+  background: linear-gradient(135deg, #263021, #1a241b 60%);
+  border: 1px solid #bdcdb51a;
+  box-shadow: inset 0 1px 0 #ffffff08;
+}
+.body-target > p strong {
+  float: none;
+  display: block;
+  font-size: 20px;
+  margin-top: 6px;
+  margin-bottom: 10px;
+  color: #e4eddf;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+}
+.body-target progress {
+  height: 3px;
+}
+.goal-orbit {
+  position: absolute;
+  right: 18px;
+  top: 22px;
+  width: 72px;
+  height: 72px;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle, #25341e 0%, transparent 65%);
+  border-radius: 50%;
+}
+.goal-orbit svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.goal-orbit circle {
+  fill: none;
+  stroke-width: 3;
+}
+.orbit-track {
+  stroke: #d4e8c31a;
+}
+.orbit-progress {
+  stroke: var(--accent);
+  stroke-linecap: round;
+}
+.goal-orbit > span {
+  font-size: 15px;
+  color: #d9edc7;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.05em;
+}
+.metric,
+.split-card {
+  background: linear-gradient(145deg, #1c241f, #111813 80%);
+  border-color: #d5e5cc14;
+  box-shadow: inset 0 1px 0 #ffffff06;
+}
+.bottom-nav {
+  background: linear-gradient(170deg, #222a23f5, #111812fa 70%);
+  box-shadow:
+    inset 0 1px 0 #ffffff15,
+    0 -8px 30px #0003;
+}
+.primary {
+  background: linear-gradient(135deg, #d1ff97, #b9f56a 55%, #a2d653);
+  box-shadow:
+    inset 0 1px 0 #f6ffe070,
+    0 4px 12px #0003;
+}
+.secondary {
+  background: linear-gradient(150deg, #2b352c, #1b251d);
+  box-shadow: inset 0 1px 0 #ffffff0c;
+}
+@media (max-width: 600px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr) 118px;
+    column-gap: 12px;
+  }
+  .hero > h2 {
+    font-size: 27px;
+    margin-bottom: 10px;
+  }
+  .hero > .supporting {
+    font-size: 11px;
+  }
+  .hero > .eyebrow {
+    font-size: 8px;
+    letter-spacing: 0.06em;
+  }
+  .hero-cta {
+    grid-column: 1/-1;
+    max-width: none;
+  }
+  .training-dial {
+    grid-row: 2/5;
+    align-self: center;
+  }
+  .dial-bezel {
+    padding: 5px;
+  }
+  .dial-bezel::before {
+    inset: 4px;
+  }
+  .dial-hub {
+    gap: 3px;
+  }
+  .dial-hub strong {
+    font-size: 28px;
+  }
+  .dial-hub > span {
+    font-size: 6px;
+  }
+  .dial-hub small {
+    font-size: 4.5px;
+  }
+  .dial-needle {
+    height: 2px;
+  }
+  .dial-ticks {
+    inset: 6px;
+  }
+  .training-dial input[type="range"] {
+    margin-top: 0;
+    height: 40px;
+  }
+  .dial-stops {
+    font-size: 7px;
+    margin-top: -7px;
+  }
+  .body-panel > .section-title h2 {
+    font-size: 24px;
+  }
+  .body-console-bar {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .body-metrics strong {
+    font-size: 27px;
+  }
+  .body-metrics strong small {
+    display: block;
+    margin-top: 5px;
+    margin-left: 0;
+    font-size: 9px;
+  }
+  .body-target {
+    padding: 16px 108px 16px 16px;
+  }
+  .goal-orbit {
+    top: 18px;
+    right: 16px;
+  }
+  .metric-view-switch button {
+    font-size: 9px;
+    padding: 9px 10px;
+    min-height: 40px;
+  }
+  .console-indicator {
+    font-size: 7px;
+  }
+  .body-panel::before {
+    left: 18px;
+    right: 18px;
+  }
+}
+@media (max-width: 360px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr) 100px;
+    padding: 18px;
+    column-gap: 10px;
+  }
+  .hero > h2 {
+    font-size: 24px;
+  }
+  .dial-hub strong {
+    font-size: 25px;
+  }
+  .dial-hub small {
+    display: none;
+  }
+  .body-metrics strong {
+    font-size: 23px;
+  }
+  .body-target {
+    padding-right: 96px;
+  }
+  .goal-orbit {
+    width: 64px;
+    height: 64px;
+    right: 14px;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .dial-needle {
+    transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .dial-hub:active {
+    scale: 0.96;
+  }
+  .dial-hub {
+    transition:
+      scale 0.16s ease,
+      box-shadow 0.16s ease;
+  }
+  .hero:hover::after {
+    transform: translateX(120%);
+    transition: transform 1.3s ease;
+  }
+  .goal-orbit .orbit-progress {
+    transition: stroke-dasharray 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .body-metrics > div {
+    animation: telemetry-in 0.45s ease both;
+  }
+  .body-metrics > div:nth-child(2) {
+    animation-delay: 0.07s;
+  }
+  .body-metrics > div:nth-child(3) {
+    animation-delay: 0.14s;
+  }
+  .metric:hover,
+  .split-card:hover {
+    box-shadow:
+      inset 0 1px 0 #ffffff15,
+      0 6px 18px #0002;
+    translate: 0 -1px;
+  }
+  .metric,
+  .split-card {
+    transition:
+      translate 0.18s ease,
+      box-shadow 0.18s ease;
+  }
+  .primary:active,
+  .secondary:active {
+    translate: 0 1px;
+  }
+  @keyframes telemetry-in {
+    from {
+      opacity: 0;
+      transform: translateY(5px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+  .hero::after {
+    display: none;
+  }
+}
+.body-record-context {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 16px;
+  row-gap: 5px;
+  font-size: 10px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.body-record-context span:first-child {
+  color: #abb9a2;
+}
+.body-target progress {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.body-target > small {
+  display: block;
+  margin-top: 12px;
+  line-height: 1.5;
+}
+.body-console-bar {
+  margin-top: 18px;
+}
+@media (max-width: 600px) {
+  .body-record-context {
+    font-size: 10px;
+  }
+  .body-target {
+    min-height: 154px;
+  }
+  .body-target > p.supporting {
+    max-width: 155px;
+  }
+  .body-target > small {
+    max-width: 155px;
+  }
+}

@@ -1,3 +1,4 @@
+import TrainingDial from "./src/TrainingDial";
 import BodyPanel from "./src/BodyPanel";
 import {
   BASELINE,
@@ -188,6 +189,7 @@ export default function App() {
     }
   });
   const [day, setDay] = useState(0);
+  const [homeDay, setHomeDay] = useState<number | null>(null);
   const [picker, setPicker] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [renaming, setRenaming] = useState<string | null>(null);
@@ -600,6 +602,11 @@ export default function App() {
       }),
     )
     .find((p) => p?.change);
+  const homeSelection =
+    homeDay ??
+    (Object.keys(data.drafts).length
+      ? Number(Object.keys(data.drafts)[0])
+      : stats.nextDay);
   if (!ready)
     return (
       <div className="loading">
@@ -660,33 +667,22 @@ export default function App() {
                     : "YOUR NEXT SESSION"}
                 </span>
                 <span className="session-number">
-                  0{stats.nextDay + 1} / 03
+                  0{homeSelection + 1} / 03
                 </span>
               </div>
               <p className="eyebrow">WEIGHT-LIFTING · YOUR SPLIT</p>
-              <h2>
-                {DAYS[
-                  Object.keys(data.drafts).length
-                    ? Number(Object.keys(data.drafts)[0])
-                    : stats.nextDay
-                ].replace(" Day", "")}
-              </h2>
+              <h2>{DAYS[homeSelection].replace(" Day", "")}</h2>
               <p className="supporting">
-                {Object.keys(data.drafts).length
+                {data.drafts[homeSelection]
                   ? "You have an unfinished session. Pick up where you left off."
                   : "Focused training. Measurable progress. Your pace."}
               </p>
+              <TrainingDial day={homeSelection} onChange={setHomeDay} />
               <button
                 className="primary hero-cta"
-                onClick={() =>
-                  start(
-                    Object.keys(data.drafts).length
-                      ? Number(Object.keys(data.drafts)[0])
-                      : stats.nextDay,
-                  )
-                }
+                onClick={() => start(homeSelection)}
               >
-                {Object.keys(data.drafts).length
+                {data.drafts[homeSelection]
                   ? "Continue Workout"
                   : "Start Workout"}
                 <Icon type="arrow" />

@@ -93,3 +93,9 @@ The editable starting proposal is 18% body fat and approximately 83.7 kg, calcul
 Check-ins use entered dates and store optional body fat and skeletal muscle mass. Weight changes show percent differences; body-fat differences use percentage points. Goal completion is directional from the original baseline, can be negative when moving away, and its visual progress bar is capped at 0–100. Missing optional measurements are not carried forward as fresh readings.
 
 Grey lifting placeholders use the latest completed session: retain the previous set load, or suggest a 2.5% increase after all equal-load sets reach 12 reps, rounded to 0.1 kg. Actual equipment increments may differ. Suggestions never populate or save a set; user-entered weights show per-set percentage load changes against the last session.
+
+## Metallic homepage interactions
+
+The homepage now includes a machined-metal training dial: tap its hub or use the accessible range slider/keyboard to choose a split. Start Workout opens the selected day. The body console switches between recorded values and actual percentage changes; goal rings use the existing goal-progress calculation. These controls do not change saved measurements.
+
+Metal highlights, button press feedback, one-time metric entry transitions and on-change ring motion are restrained; there are no continuous decorative animation loops. All animation/transition effects are disabled under prefers-reduced-motion. Mobile layouts are checked from 320px upward, and the existing in-page completion action and touch scrolling remain intact.
