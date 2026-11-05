@@ -24,12 +24,12 @@ test("check-in changes and goal completion support loss, gain, zero baselines an
   assert.equal(goalProgress(92, 90, 80), -20);
   assert.equal(goalProgress(90, 90, 90), null);
 });
-test("suggested loads rise only when previous equal-load sets hit 12 reps", () => {
+test("grey loads preview an equipment step even for pyramid sets without filling bodyweight values", () => {
   const sets = Array.from({ length: 3 }, () => ({ weight: "40", reps: "12" }));
-  assert.equal(suggestedWeight(sets, 0, "barbell"), 41);
+  assert.equal(suggestedWeight(sets, 0, "barbell"), 42.5);
   assert.equal(
     suggestedWeight([{ weight: "40", reps: "8" }], 0, "barbell"),
-    40,
+    42.5,
   );
   assert.equal(
     suggestedWeight([{ weight: "0", reps: "15" }], 0, "body only"),
@@ -44,6 +44,6 @@ test("suggested loads rise only when previous equal-load sets hit 12 reps", () =
       0,
       "barbell",
     ),
-    40,
+    42.5,
   );
 });

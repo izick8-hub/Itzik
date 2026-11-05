@@ -1,3 +1,4 @@
+import type { ProgressionSettings } from "./progression";
 import type { BodyMeasurement, BodyGoals } from "./body";
 export const DAYS = [
   "Legs + Shoulders Day",
@@ -23,6 +24,7 @@ export type Cardio = {
   distance: string;
 };
 export type Data = {
+  progressionSettings?: Record<string, ProgressionSettings>;
   bodyMeasurements?: BodyMeasurement[];
   bodyGoals?: BodyGoals;
   exerciseNames?: Record<string, string>;

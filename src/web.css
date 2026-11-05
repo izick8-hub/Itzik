@@ -2574,3 +2574,70 @@ html {
     max-width: 155px;
   }
 }
+.progression-plan {
+  padding: 14px 18px;
+  border-top: 1px solid var(--border);
+}
+.progression-plan > summary {
+  font-size: 11px;
+  color: var(--muted);
+  cursor: pointer;
+  min-height: 32px;
+  line-height: 1.7;
+}
+.progression-plan > .supporting {
+  font-size: 12px;
+  margin: 12px 0;
+}
+.progression-plan form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 14px 0;
+}
+.progression-plan label {
+  font-size: 10px;
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.progression-plan form button {
+  grid-column: 1/-1;
+  font-size: 11px;
+}
+.progression-plan a {
+  color: var(--accent);
+  text-underline-offset: 3px;
+}
+.progression-plan > .footnote {
+  margin: 10px 0;
+  font-size: 10px;
+}
+.load-preview-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.load-preview-list > span {
+  font-size: 10px;
+  background: var(--secondary);
+  padding: 7px 9px;
+  border-radius: 7px;
+  color: #c1d7b0;
+}
+@media (max-width: 360px) {
+  .progression-plan {
+    padding: 12px 14px;
+  }
+  .progression-plan form {
+    grid-template-columns: 1fr;
+  }
+}
+.load-preview-note {
+  padding: 0 18px 12px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.7;
+}

@@ -94,7 +94,9 @@ test("progress compares real stored sessions and long histories stay within the 
   await expect(
     page.getByText("+20% mean weight", { exact: false }),
   ).toBeVisible();
-  await expect(page.getByText(/Consider a 2.5–5% increase/)).toBeVisible();
+  await expect(
+    page.locator(".exercise-insight").getByText(/two logged sessions/),
+  ).toBeVisible();
   await page
     .getByRole("button", {
       name: "Older workout for Dumbbell Shoulder Press",

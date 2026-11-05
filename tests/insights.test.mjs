@@ -40,7 +40,10 @@ test("load and reps changes are separate and zero baselines stay undefined", () 
   assert.equal(comparison(sets(12, 8), sets(10, 10).slice(1)), null);
 });
 test("progression increases only after controlled rep-target assumption and never gives bodyweight a kg target", () => {
-  assert.match(progression(sets(40, 12), "barbell"), /2.5–5%/);
+  assert.match(
+    progression(sets(40, 12), "barbell"),
+    /not an automatic increase/,
+  );
   assert.match(progression(sets(40, 8), "barbell"), /same weight/);
   assert.doesNotMatch(progression(sets(0, 15), "body only"), /kg/);
   assert.match(
@@ -51,6 +54,6 @@ test("progression increases only after controlled rep-target assumption and neve
       ],
       "dumbbell",
     ),
-    /set-by-set/,
+    /every set/,
   );
 });

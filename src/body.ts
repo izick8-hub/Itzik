@@ -36,20 +36,7 @@ export function goalProgress(current: number, start: number, target: number) {
   const value = ((current - start) / (target - start)) * 100;
   return Object.is(value, -0) ? 0 : value;
 }
-export function suggestedWeight(
-  previous: SetEntry[],
-  index: number,
-  equipment: string | null,
-) {
-  const old = Number(previous[index]?.weight);
-  if (!Number.isFinite(old) || old <= 0) return null;
-  const ready =
-    equipment !== "body only" &&
-    previous.length > 0 &&
-    previous.every((s) => Number(s.reps) >= 12) &&
-    previous.every((s) => Number(s.weight) === old);
-  return ready ? Math.round(old * 1.025 * 10) / 10 : old;
-}
+export { suggestedWeight } from "./progression.ts";
 
 export const PROPOSED_BODY_GOALS: BodyGoals = {
   weight: Math.round((68.6 / (1 - 0.18)) * 10) / 10,

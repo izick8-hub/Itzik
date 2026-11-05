@@ -43,14 +43,4 @@ export function comparison(latest: SetEntry[], previous: SetEntry[]) {
     reps: pct(reps(latest), reps(previous)),
   };
 }
-export function progression(sets: SetEntry[], equipment: string | null) {
-  if (!sets.length) return "Log a session to build your baseline.";
-  const weights = sets.map((s) => Number(s.weight));
-  if (weights.some((w) => w <= 0) || equipment === "body only")
-    return "Aim for one more controlled rep before adding resistance.";
-  if (!weights.every((w) => w === weights[0]))
-    return "Repeat your set-by-set loads and aim for one more controlled rep.";
-  if (sets.every((s) => Number(s.reps) >= 12))
-    return `Consider a 2.5–5% increase (about ${(weights[0] * 1.025).toFixed(1)}–${(weights[0] * 1.05).toFixed(1)} kg), only if every set felt controlled. Use the smallest available increment.`;
-  return "Keep the same weight and aim for one more rep on a set, with controlled technique.";
-}
+export { progression } from "./progression.ts";

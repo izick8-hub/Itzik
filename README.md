@@ -70,7 +70,7 @@ The website uses `App.web.tsx` with shared data types and the existing `lift-jou
 
 Dashboard metrics use completed lifting sessions: all-time session count, consecutive local calendar training days (ending today or yesterday), and volume as the sum of logged kilograms × reps. Volume is an external-load logging metric, not a measure of total mechanical work. Recent progress identifies the exercise and compares mean recorded weight. Exercise cards compare the two most recent sessions within that day, only when set counts match; weight and total-rep changes are separate, and zero baselines do not produce percentages.
 
-Progression guidance is a general starting point: keep load and add a controlled rep, or consider a 2.5–5% increase after all equal-load sets reach 12 reps, only if technique felt controlled. It does not infer recovery, injuries, exertion, or equipment increments from missing data. Unequal-load sets and bodyweight exercises receive rep-focused guidance.
+Progression previews and readiness are separate: grey inputs show the next feasible equipment step, while explanatory guidance considers your editable rep goal and recent logged sessions. The app does not infer recovery, injury status, exertion, or controlled technique from the log. Bodyweight exercises get rep-focused guidance.
 
 Responsive browser checks cover 320, 390, 768 and 1440 pixel widths. The current workspace browser is Chromium; actual Safari device testing remains separate.
 
@@ -92,10 +92,18 @@ The editable starting proposal is 18% body fat and approximately 83.7 kg, calcul
 
 Check-ins use entered dates and store optional body fat and skeletal muscle mass. Weight changes show percent differences; body-fat differences use percentage points. Goal completion is directional from the original baseline, can be negative when moving away, and its visual progress bar is capped at 0–100. Missing optional measurements are not carried forward as fresh readings.
 
-Grey lifting placeholders use the latest completed session: retain the previous set load, or suggest a 2.5% increase after all equal-load sets reach 12 reps, rounded to 0.1 kg. Actual equipment increments may differ. Suggestions never populate or save a set; user-entered weights show per-set percentage load changes against the last session.
+Grey lifting placeholders now preview a higher next equipment step for each logged set, including pyramid sets. The starting calculation is 2.5%, rounded up by an editable equipment increment, and jumps over 10% are withheld. A higher preview is not automatic readiness to increase; the app checks two sessions above the editable rep target and asks the user to consider technique and effort. Suggestions never populate or save a set.
 
 ## Metallic homepage interactions
 
 The homepage now includes a machined-metal training dial: tap its hub or use the accessible range slider/keyboard to choose a split. Start Workout opens the selected day. The body console switches between recorded values and actual percentage changes; goal rings use the existing goal-progress calculation. These controls do not change saved measurements.
 
 Metal highlights, button press feedback, one-time metric entry transitions and on-change ring motion are restrained; there are no continuous decorative animation loops. All animation/transition effects are disabled under prefers-reduced-motion. Mobile layouts are checked from 320px upward, and the existing in-page completion action and touch scrolling remain intact.
+
+## Exercise-specific progression settings
+
+Next weight plan stores per-exercise rep targets and equipment increments in progressionSettings without changing existing records or drafts. Defaults: 8-rep target; barbell 2.5 kg upper body / 5 kg for major lower-body muscles; dumbbell 1 kg or 0.5 kg for named isolation movements; machine/cable 2.5 kg, or 5 kg for major lower-body machine movements. These are editable starting estimates, not verified increments for a particular machine. Keep the same per-hand versus total-load convention as the log.
+
+The same pure progression module provides placeholders, previews, and explanatory text. Zero/bodyweight loads do not get external-weight suggestions. Readiness requires at least one rep over the target in every set of each of the two most recent sessions. This is a conservative application rule; it does not establish good technique, exertion, or recovery.
+
+Reference: ACSM, Progression Models in Resistance Training for Healthy Adults, 2009, PMID 19204579 (https://pubmed.ncbi.nlm.nih.gov/19204579/). The established recommendation is approximately 2–10% load increases when the prescribed load can be performed for one or two repetitions above the target. Live retrieval returned a proxy 403; do not claim a completed live literature search. PubMed access was added to the pending environment network draft, preserving prior requested research domains.

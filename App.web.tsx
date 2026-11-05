@@ -1,3 +1,5 @@
+import ProgressionControls from "./src/ProgressionControls";
+import { progressionAdvice } from "./src/progression";
 import TrainingDial from "./src/TrainingDial";
 import BodyPanel from "./src/BodyPanel";
 import {
@@ -19,7 +21,7 @@ import {
   validSets,
   keyFor,
 } from "./src/model";
-import { summary, comparison, progression, volume } from "./src/insights";
+import { summary, comparison, volume } from "./src/insights";
 import "./src/web.css";
 const KEY = "lift-journal:v1";
 const muscles: Record<string, string[]> = {
@@ -277,9 +279,10 @@ export default function App() {
     data.customExercises?.find((e) => e.id === id)?.name ||
     catalogName(id);
   const exercises = [
-    ...catalog.map((e) => ({ ...e, name: name(e.id) })),
+    ...catalog.map((e) => ({ ...e, originalName: e.name, name: name(e.id) })),
     ...(data.customExercises || []).map((e) => ({
       ...e,
+      originalName: e.name,
       name: name(e.id),
       primaryMuscles: muscles[e.group] || [],
       secondaryMuscles: [] as string[],
@@ -956,6 +959,12 @@ export default function App() {
                           <Icon type="minus" />
                         </button>
                       </header>
+                      {history[0] && (
+                        <p className="load-preview-note">
+                          Grey = next possible load. Increase only after meeting
+                          your rep goal with controlled technique.
+                        </p>
+                      )}
                       <div className="set-table">
                         <div className="session-columns">
                           <span />
@@ -1007,6 +1016,8 @@ export default function App() {
                                         history[0].sets[id],
                                         i,
                                         e.equipment,
+                                        data.progressionSettings?.[id],
+                                        e,
                                       ) ?? "kg",
                                     )
                                   : "kg"
@@ -1096,8 +1107,9 @@ export default function App() {
                       {history[0] && (
                         <div className="draft-weight-progress">
                           <p>
-                            Grey weights are optional suggestions from your last
-                            session. They are not saved until you type.
+                            Grey numbers are a conditional next-load preview,
+                            rounded to your equipment step. Try them only when
+                            ready; they are not saved until you type.
                           </p>
                           {(draft?.sets[id] || newSets()).filter(
                             (s) =>
@@ -1124,6 +1136,20 @@ export default function App() {
                           )}
                         </div>
                       )}
+                      <ProgressionControls
+                        exercise={e}
+                        history={history.map((session) => session.sets[id])}
+                        settings={data.progressionSettings?.[id]}
+                        onSave={(settings) =>
+                          setData((d) => ({
+                            ...d,
+                            progressionSettings: {
+                              ...d.progressionSettings,
+                              [id]: settings,
+                            },
+                          }))
+                        }
+                      />
                       <div className="exercise-insight">
                         <Icon type="chart" />
                         <div>
@@ -1141,7 +1167,11 @@ export default function App() {
                           )}
                           <p>
                             {history.length
-                              ? progression(history[0].sets[id], e.equipment)
+                              ? progressionAdvice(
+                                  history.map((session) => session.sets[id]),
+                                  e,
+                                  data.progressionSettings?.[id],
+                                )
                               : "Log your first session to establish a baseline."}
                           </p>
                           {history.length > 0 && (
