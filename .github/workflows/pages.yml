@@ -30,6 +30,18 @@ jobs:
       - run: npm run build:web
         env:
           PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+      - name: Install the separate shopping app
+        run: npm ci --prefix shopping
+      - name: Validate the separate shopping app
+        run: |
+          npm run typecheck --prefix shopping
+          npm test --prefix shopping
+      - name: Build the separate shopping site
+        run: npm run build --prefix shopping
+        env:
+          NEXT_PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path }}/shopping
+      - name: Add shopping without replacing the fitness site
+        run: cp -R shopping/out dist/shopping
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
