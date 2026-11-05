@@ -1,3 +1,10 @@
+import BodyPanel from "./src/BodyPanel";
+import {
+  BASELINE,
+  PROPOSED_BODY_GOALS,
+  suggestedWeight,
+  percentChange,
+} from "./src/body";
 import React, { useEffect, useRef, useState } from "react";
 import catalog from "./src/exercises.json";
 import photoFiles from "./src/photo-files.json";
@@ -221,8 +228,18 @@ export default function App() {
           !Array.isArray(d.cardio)
         )
           throw Error();
-        setData(d);
+        setData({
+          ...d,
+          bodyMeasurements: d.bodyMeasurements ?? [BASELINE],
+          bodyGoals: d.bodyGoals ?? PROPOSED_BODY_GOALS,
+        });
       }
+      if (!raw)
+        setData((d) => ({
+          ...d,
+          bodyMeasurements: [BASELINE],
+          bodyGoals: PROPOSED_BODY_GOALS,
+        }));
       setReady(true);
     } catch {
       setError(
@@ -680,6 +697,7 @@ export default function App() {
                 <span />
               </div>
             </section>
+            <BodyPanel data={data} onChange={setData} />
             <section className="stats-grid" aria-label="Training summary">
               <Metric
                 label="WORKOUTS COMPLETED"
@@ -986,7 +1004,17 @@ export default function App() {
                             <input
                               aria-label={`${e.name} set ${i + 1} weight in kilograms`}
                               inputMode="decimal"
-                              placeholder="kg"
+                              placeholder={
+                                history[0]
+                                  ? String(
+                                      suggestedWeight(
+                                        history[0].sets[id],
+                                        i,
+                                        e.equipment,
+                                      ) ?? "kg",
+                                    )
+                                  : "kg"
+                              }
                               value={s.weight}
                               onChange={(v) =>
                                 updateSet(id, i, "weight", v.target.value)
@@ -1067,6 +1095,37 @@ export default function App() {
                           >
                             <Icon type="trash" />
                           </button>
+                        </div>
+                      )}
+                      {history[0] && (
+                        <div className="draft-weight-progress">
+                          <p>
+                            Grey weights are optional suggestions from your last
+                            session. They are not saved until you type.
+                          </p>
+                          {(draft?.sets[id] || newSets()).filter(
+                            (s) =>
+                              s.weight.trim() !== "" &&
+                              Number.isFinite(Number(s.weight)),
+                          ).length > 0 && (
+                            <div>
+                              {(draft?.sets[id] || newSets()).map((s, i) => {
+                                const old = Number(
+                                  history[0].sets[id][i]?.weight,
+                                );
+                                const pct =
+                                  s.weight.trim() !== ""
+                                    ? percentChange(Number(s.weight), old)
+                                    : null;
+                                return pct !== null && Number.isFinite(pct) ? (
+                                  <span key={i}>
+                                    Set {i + 1}: {pct > 0 ? "+" : ""}
+                                    {fmt(pct)}% weight vs last workout
+                                  </span>
+                                ) : null;
+                              })}
+                            </div>
+                          )}
                         </div>
                       )}
                       <div className="exercise-insight">

@@ -1698,3 +1698,244 @@ html {
 .edit-exercise h3 {
   overflow-wrap: anywhere;
 }
+.body-panel {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 18px;
+  padding: 24px;
+}
+.body-panel > .section-title {
+  align-items: center;
+}
+.body-panel .secondary {
+  font-size: 11px;
+}
+.body-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 20px 0;
+}
+.body-metrics > div {
+  background: var(--bg);
+  padding: 16px;
+  border-radius: 12px;
+  min-width: 0;
+}
+.body-metrics strong {
+  display: block;
+  font-size: 28px;
+  font-weight: 550;
+  margin: 12px 0 6px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+}
+.body-metrics strong small {
+  font-size: 12px;
+  letter-spacing: 0;
+  margin-left: 5px;
+  color: var(--muted);
+}
+.body-metrics p {
+  font-size: 10px;
+  color: var(--muted);
+}
+.body-goal-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.body-targets {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 12px 0;
+}
+.body-target {
+  padding: 16px;
+  background: var(--secondary);
+  border-radius: 12px;
+}
+.body-target > p {
+  font-size: 12px;
+}
+.body-target > p strong {
+  float: right;
+}
+.body-target small {
+  color: var(--muted);
+  font-size: 10px;
+}
+.body-target progress {
+  display: block;
+  width: 100%;
+  height: 6px;
+  border: 0;
+  border-radius: 5px;
+  margin: 14px 0;
+  background: var(--bg);
+  accent-color: var(--accent);
+}
+.body-target progress::-webkit-progress-bar {
+  background: var(--bg);
+  border-radius: 5px;
+}
+.body-target progress::-webkit-progress-value {
+  background: var(--accent);
+  border-radius: 5px;
+}
+.body-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  padding: 18px;
+  background: var(--bg);
+  border-radius: 12px;
+  margin: 16px 0;
+}
+.body-form > h3 {
+  grid-column: 1/-1;
+}
+.body-form label {
+  font-size: 11px;
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.body-form input {
+  min-width: 0;
+  width: 100%;
+}
+.scan-details {
+  border-top: 1px solid var(--border);
+  padding: 16px 0 0;
+  margin-top: 16px;
+}
+.scan-details summary {
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--muted);
+  min-height: 30px;
+}
+.scan-details dl {
+  margin: 12px 0;
+}
+.scan-details dl > div {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+}
+.scan-details dt {
+  color: var(--muted);
+}
+.scan-details dd {
+  margin: 0;
+  text-align: right;
+  flex-shrink: 0;
+}
+.body-history > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 10px;
+}
+.body-history strong {
+  font-size: 12px;
+}
+.body-history p {
+  font-size: 11px;
+  color: var(--muted);
+}
+.body-history small {
+  font-size: 10px;
+  color: var(--muted);
+}
+.draft-weight-progress {
+  padding: 12px 18px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 10px;
+}
+.draft-weight-progress > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.draft-weight-progress span {
+  background: var(--secondary);
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+}
+.set-row input::placeholder {
+  color: #7f8c83;
+  opacity: 0.75;
+}
+@media (max-width: 600px) {
+  .body-panel {
+    padding: 18px 14px;
+  }
+  .body-panel .section-title h2 {
+    font-size: 21px;
+  }
+  .body-metrics {
+    gap: 7px;
+  }
+  .body-metrics > div {
+    padding: 12px 8px;
+  }
+  .body-metrics .eyebrow {
+    font-size: 7px;
+    letter-spacing: 0.05em;
+  }
+  .body-metrics strong {
+    font-size: 23px;
+  }
+  .body-metrics strong small {
+    font-size: 10px;
+  }
+  .body-metrics p {
+    font-size: 9px;
+  }
+  .body-targets {
+    grid-template-columns: 1fr;
+  }
+  .body-form {
+    padding: 14px;
+    gap: 12px;
+  }
+  .scan-details dl > div {
+    font-size: 10px;
+  }
+  .draft-weight-progress {
+    padding: 12px 14px;
+  }
+}
+@media (max-width: 360px) {
+  .body-form {
+    grid-template-columns: 1fr;
+  }
+  .body-metrics strong {
+    font-size: 20px;
+  }
+}
+.body-panel a {
+  color: var(--accent);
+  text-decoration-color: #b9f56a50;
+  text-underline-offset: 3px;
+}
+.scan-details[open] > .supporting {
+  margin: 12px 0;
+  font-size: 12px;
+}
+.scan-details[open] > .footnote {
+  margin: 12px 0;
+}

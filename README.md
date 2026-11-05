@@ -83,3 +83,13 @@ The six user-approved mascot illustrations appear in muscle-section headings and
 Muscle artwork now uses muscle-outline-atlas.png: lime-green contours with transparent interiors and no colored skin fills or white sticker border. The original color variant is retained in the downloadable icon pack.
 
 Exercise cards include Rename, which stores a personal name override while preserving the original exercise ID and all saved sets. The picker offers Add custom exercise; custom entries persist on this device and are grouped by the section in which they were created. Photo paths use src/photo-files.json and local public/exercise-photos files. Photos are excluded from bulk precaching; the service worker caches successfully viewed images in lift-journal-photos-v1. No image pixels have been altered.
+
+## Body check-ins and training hints
+
+The homepage includes the user's Nov 1, 2026 scan, transcribed in src/body.ts. All subsequent check-ins and editable targets are local browser data. Baseline import happens only when bodyMeasurements is absent; existing check-ins and explicit target choices are preserved. The confirmed profile is male, age 31 at baseline, 178 cm, with a fat-loss/muscle-preservation goal.
+
+The editable starting proposal is 18% body fat and approximately 83.7 kg, calculated as 68.6 kg reported fat-free mass / (1 - 0.18). This assumes preserved fat-free mass and is not a medical optimum. No target is inferred for water compartments, phase angle, BMC, or BMR. Direct CDC, ACE and PMC research retrieval was blocked by the environment network policy; links are shown as unverified references, not claimed as completed live research.
+
+Check-ins use entered dates and store optional body fat and skeletal muscle mass. Weight changes show percent differences; body-fat differences use percentage points. Goal completion is directional from the original baseline, can be negative when moving away, and its visual progress bar is capped at 0–100. Missing optional measurements are not carried forward as fresh readings.
+
+Grey lifting placeholders use the latest completed session: retain the previous set load, or suggest a 2.5% increase after all equal-load sets reach 12 reps, rounded to 0.1 kg. Actual equipment increments may differ. Suggestions never populate or save a set; user-entered weights show per-set percentage load changes against the last session.

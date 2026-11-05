@@ -1,3 +1,4 @@
+import type { BodyMeasurement, BodyGoals } from "./body";
 export const DAYS = [
   "Legs + Shoulders Day",
   "Chest + Biceps Day",
@@ -22,6 +23,8 @@ export type Cardio = {
   distance: string;
 };
 export type Data = {
+  bodyMeasurements?: BodyMeasurement[];
+  bodyGoals?: BodyGoals;
   exerciseNames?: Record<string, string>;
   customExercises?: {
     id: string;
