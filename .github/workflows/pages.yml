@@ -37,9 +37,14 @@ jobs:
           npm run typecheck --prefix shopping
           npm test --prefix shopping
       - name: Build the separate shopping site
-        run: npm run build --prefix shopping
+        run: |
+          : "${NEXT_PUBLIC_SUPABASE_URL:?Missing NEXT_PUBLIC_SUPABASE_URL secret}"
+          : "${NEXT_PUBLIC_SUPABASE_ANON_KEY:?Missing NEXT_PUBLIC_SUPABASE_ANON_KEY secret}"
+          npm run build --prefix shopping
         env:
           NEXT_PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path }}/shopping
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
       - name: Add shopping without replacing the fitness site
         run: cp -R shopping/out dist/shopping
       - uses: actions/upload-pages-artifact@v3
