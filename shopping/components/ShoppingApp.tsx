@@ -263,7 +263,14 @@ export default function ShoppingApp() {
     .filter((p) => p.count > 0)
     .sort((a, b) => b.count - a.count)
     .slice(0, 4);
+  const [importIds, setImportIds] = useState<string[]>([]);
+  const [importConfirmed, setImportConfirmed] = useState(false);
+  const newListId = useRef<string | null>(null);
+  const newItemId = useRef<string | null>(null);
   const close = useRef(() => setModal(null));
+  useEffect(() => {
+    setImportConfirmed(false);
+  }, [store.household, store.session?.user.id]);
   useEffect(() => {
     if (!toast) return;
     const t = setTimeout(() => setToast(""), 4500);
@@ -292,11 +299,13 @@ export default function ShoppingApp() {
     }
   }
   function openNew() {
+    newListId.current = null;
     setNewName("הקנייה השבועית שלנו");
     setNewDate(nextThursday());
     setModal("new");
   }
   function openAdd() {
+    newItemId.current = null;
     setChosen(null);
     setEditing(null);
     setQuery("");
@@ -308,7 +317,7 @@ export default function ShoppingApp() {
   async function createList(e: React.FormEvent) {
     e.preventDefault();
     const l: List = {
-      id: uid(),
+      id: (newListId.current ||= uid()),
       name: newName.trim(),
       date: newDate,
       status: "planned",
@@ -333,7 +342,7 @@ export default function ShoppingApp() {
     if (!Number.isFinite(q) || q <= 0 || q > 100000)
       return store.setError("בחרו כמות חיובית תקינה.");
     const item: Item = {
-      id: editing?.id || uid(),
+      id: editing?.id || (newItemId.current ||= uid()),
       list_id: active.id,
       product_id: chosen.id,
       name: chosen.name,
@@ -351,6 +360,7 @@ export default function ShoppingApp() {
         editing ? "הכמות עודכנה" : "נוסף לרשימה באהבה",
       )
     ) {
+      newItemId.current = null;
       setChosen(null);
       setEditing(null);
       setQuantity("1");
@@ -423,6 +433,12 @@ export default function ShoppingApp() {
   }
   async function uploadPhoto(file?: File) {
     if (!file || !receipt) return;
+    if (store.cloudAvailable && store.mode !== "cloud") {
+      store.setError(
+        "העלאת קבלה לענן חסומה עד לחיבור לבית. לא נשמור תמונה מקומית כתחליף.",
+      );
+      return;
+    }
     if (
       !["image/jpeg", "image/png", "image/webp"].includes(file.type) ||
       file.size > 10 * 1024 * 1024
@@ -600,11 +616,44 @@ export default function ShoppingApp() {
         </div>
       </header>
       <main className="app-shell">
+        {store.cloudAvailable && store.mode !== "cloud" && (
+          <div className="notice">
+            <span>{store.sync}</span>
+            <button
+              className="text-button"
+              onClick={() => setModal("settings")}
+            >
+              כניסה והגדרות הבית
+            </button>
+            {store.mode === "error" && (
+              <button
+                className="text-button"
+                onClick={() => void store.retry()}
+              >
+                ניסיון חיבור נוסף
+              </button>
+            )}
+          </div>
+        )}
+        {store.mode === "cloud" && store.localData.lists.length > 0 && (
+          <div className="notice">
+            <span>
+              נמצאו רשימות מקומיות ששמורות במכשיר. אפשר לייבא אותן בבטחה
+              בהגדרות.
+            </span>
+            <button
+              className="text-button"
+              onClick={() => setModal("settings")}
+            >
+              גיבוי וייבוא לענן
+            </button>
+          </div>
+        )}
         {!store.online && (
           <div className="notice">
             <WifiOff size={18} />
-            {store.mode === "cloud"
-              ? "אין חיבור. נמתין לרשת לפני שמירת שינויים."
+            {store.cloudAvailable
+              ? "אין חיבור. השמירה בענן חסומה; לא נשמור מקומית כתחליף."
               : "מצב מקומי. הרשימות נשמרות במכשיר; שיתוף אינו פעיל."}
           </div>
         )}
@@ -830,8 +879,10 @@ export default function ShoppingApp() {
                           על שמירה ושיתוף
                         </button>
                       </>
-                    ) : (
+                    ) : store.mode === "cloud" ? (
                       <>הבית שלכם מחובר. שינויים מאושרים נשמרים בענן.</>
+                    ) : (
+                      <>לשמירה משותפת יש להתחבר ולטעון את הבית מהענן.</>
                     )}
                   </p>
                 </div>
@@ -1895,12 +1946,18 @@ export default function ShoppingApp() {
         <ModalShell title="הבית הקטן שלנו ⚙️" close={close.current}>
           <section className="settings-section">
             <h3>
-              {store.mode === "local" ? "שמירה במכשיר הזה" : "בית משותף בענן"}
+              {store.mode === "cloud"
+                ? "בית משותף בענן"
+                : store.mode === "local"
+                  ? "שמירה במכשיר הזה"
+                  : "החיבור לענן עדיין לא מוכן"}
             </h3>
             <p>
               {store.mode === "local"
                 ? "הרשימות נשמרות בדפדפן הזה בלבד. מחיקת נתוני הדפדפן תמחק אותן. שני טלפונים אינם מסתנכרנים במצב הזה."
-                : "כל השינויים המאושרים משותפים לשני חברי הבית. נתונים מקומיים קודמים אינם מועברים לענן אוטומטית."}
+                : store.mode === "cloud"
+                  ? "כל השינויים המאושרים משותפים לשני חברי הבית. נתונים מקומיים קודמים אינם מועברים לענן אוטומטית."
+                  : "השמירה חסומה עד להתחברות, שיוך לבית וטעינה מוצלחת מהענן. לא נשמור מקומית כתחליף לענן."}
             </p>
             <button className="secondary full" onClick={exportBackup}>
               <Download size={17} /> הורדת גיבוי של הנתונים
@@ -1933,6 +1990,81 @@ export default function ShoppingApp() {
               </>
             )}
           </section>
+          {store.cloudAvailable && store.localData.lists.length > 0 && (
+            <section className="settings-section">
+              <h3>הרשימות המקומיות שלכם נשמרו במכשיר</h3>
+              <p>
+                בחרו רשימות להעתקה לבית המשותף. הייבוא לא מוחק מקומית ולא דורס
+                נתונים בענן. ניסיון חוזר לא יוצר כפילויות. קבלות ותמונות נשארות
+                במכשיר ואינן מיובאות בשלב זה.
+              </p>
+              <button
+                className="secondary full"
+                onClick={() => {
+                  const url = URL.createObjectURL(
+                    new Blob([JSON.stringify(store.localData, null, 2)], {
+                      type: "application/json",
+                    }),
+                  );
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `shopping-local-backup-${localDate()}.json`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+              >
+                הורדת גיבוי מקומי לפני הייבוא
+              </button>
+              {store.localData.lists.map((list) => (
+                <label className="checkbox-label" key={list.id}>
+                  <input
+                    type="checkbox"
+                    checked={importIds.includes(list.id)}
+                    onChange={(e) => {
+                      setImportIds(
+                        e.target.checked
+                          ? [...importIds, list.id]
+                          : importIds.filter((id) => id !== list.id),
+                      );
+                      setImportConfirmed(false);
+                    }}
+                  />
+                  {list.name} ·{" "}
+                  {
+                    store.localData.items.filter((i) => i.list_id === list.id)
+                      .length
+                  }{" "}
+                  מוצרים
+                </label>
+              ))}
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={importConfirmed}
+                  onChange={(e) => setImportConfirmed(e.target.checked)}
+                />
+                אני מאשר להעתיק את הרשימות שבחרתי לבית המשותף בענן
+              </label>
+              <button
+                className="primary full"
+                disabled={
+                  store.mode !== "cloud" ||
+                  busy ||
+                  !importConfirmed ||
+                  !importIds.length
+                }
+                onClick={() =>
+                  void run(async () => {
+                    await store.importLocal(importIds);
+                    setImportConfirmed(false);
+                    setImportIds([]);
+                  }, "הייבוא אושר בענן. המקור המקומי נשמר ללא שינוי.")
+                }
+              >
+                ייבוא הרשימות שבחרנו לענן
+              </button>
+            </section>
+          )}
           <section className="settings-section">
             <h3>
               <Cloud size={18} /> שני טלפונים, רשימה אחת

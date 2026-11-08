@@ -172,16 +172,14 @@ test("Receipt photo persists privately in this browser and reopens from a draft"
   await page
     .getByRole("button", { name: "סיימנו לקנות! העלאת קבלה 📸" })
     .click();
-  await page
-    .getByLabel("העלאת תמונת קבלה")
-    .setInputFiles({
-      name: "receipt.png",
-      mimeType: "image/png",
-      buffer: Buffer.from(
-        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a1ioAAAAASUVORK5CYII=",
-        "base64",
-      ),
-    });
+  await page.getByLabel("העלאת תמונת קבלה").setInputFiles({
+    name: "receipt.png",
+    mimeType: "image/png",
+    buffer: Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a1ioAAAAASUVORK5CYII=",
+      "base64",
+    ),
+  });
   await expect(page.getByAltText("תמונת הקבלה שהעליתם")).toBeVisible();
   await page.getByRole("button", { name: "סגירה", exact: true }).click();
   await page.reload();
@@ -215,6 +213,11 @@ test("Two local tabs do not overwrite simultaneous list creation", async ({
   await Promise.all([
     page.getByRole("button", { name: "יש לנו דייט בסופר ♡" }).click(),
     second.getByRole("button", { name: "יש לנו דייט בסופר ♡" }).click(),
+  ]);
+  // A click finishes before the async Web Lock write. Wait for both save confirmations.
+  await Promise.all([
+    expect(page.getByRole("dialog")).toHaveCount(0),
+    expect(second.getByRole("dialog")).toHaveCount(0),
   ]);
   await page.getByRole("button", { name: "הקניות שלנו", exact: true }).click();
   await expect(

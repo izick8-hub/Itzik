@@ -80,8 +80,17 @@ export function loadLocal(): Data | null {
   const value = localStorage.getItem(KEY);
   return value ? backupSchema.parse(JSON.parse(value)) : null;
 }
+export function localRevision(): number {
+  const raw = localStorage.getItem(KEY);
+  const revision = raw ? JSON.parse(raw)._revision : 0;
+  return Number.isSafeInteger(revision) && revision >= 0 ? revision : 0;
+}
 export function saveLocal(data: Data) {
-  localStorage.setItem(KEY, JSON.stringify(backupSchema.parse(data)));
+  const validated = backupSchema.parse(data);
+  localStorage.setItem(
+    KEY,
+    JSON.stringify({ ...validated, _revision: localRevision() + 1 }),
+  );
 }
 function database(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
