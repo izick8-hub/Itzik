@@ -23,7 +23,8 @@ import {
   Session,
   emptyData,
   newSets,
-  validSets,
+  validPartialSets,
+  enteredSessionSets,
   keyFor,
 } from "./src/model";
 const notify = (title: string, message: string) => {
@@ -175,21 +176,19 @@ function Journal() {
     });
   }
   function finish() {
+    const entered = enteredSessionSets(exerciseIds, draft?.sets || {});
     if (
-      !exerciseIds.length ||
       !draft ||
-      !exerciseIds.every((id) => validSets(draft.sets[id] || newSets()))
+      !Object.keys(entered).length ||
+      !Object.values(entered).every(validPartialSets)
     ) {
       notify(
-        "Complete your sets",
-        "Enter a weight (0 is allowed) and positive whole-number reps for all three sets of each exercise.",
+        "Check your entries",
+        "Enter at least one weight or rep. Blank fields are allowed; entered weights must be zero or more and reps positive whole numbers.",
       );
       return;
     }
-    const complete: Session = {
-      ...draft,
-      sets: Object.fromEntries(exerciseIds.map((id) => [id, draft.sets[id]])),
-    };
+    const complete: Session = { ...draft, sets: entered };
     setData((d) => {
       const drafts = { ...d.drafts };
       delete drafts[day];
@@ -209,12 +208,33 @@ function Journal() {
   }
   function saveEditedWorkout() {
     if (!editing) return;
-    if (!Object.values(editing.session.sets).every(validSets)) {
-      notify("Check your sets", "Enter a weight of zero or more and positive whole-number reps for every set.");
+    const entered = enteredSessionSets(
+      Object.keys(editing.session.sets),
+      editing.session.sets,
+    );
+    if (
+      !Object.keys(entered).length ||
+      !Object.values(entered).every(validPartialSets)
+    ) {
+      notify(
+        "Check your entries",
+        "Keep at least one weight or rep. Blank fields are allowed; entered weights must be zero or more and reps positive whole numbers.",
+      );
       return;
     }
-    const updated = editing;
-    setData(d => ({...d, sessions: {...d.sessions, [updated.day]: (d.sessions[updated.day] || []).map(s => s.id === updated.session.id ? updated.session : s)}}));
+    const updated = {
+      ...editing,
+      session: { ...editing.session, sets: entered },
+    };
+    setData((d) => ({
+      ...d,
+      sessions: {
+        ...d.sessions,
+        [updated.day]: (d.sessions[updated.day] || []).map((s) =>
+          s.id === updated.session.id ? updated.session : s,
+        ),
+      },
+    }));
     setEditing(null);
   }
   function deleteWorkout() {

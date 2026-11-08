@@ -1,3 +1,4 @@
+import { validSets } from "./model.ts";
 import type { SetEntry } from "./model";
 export type ProgressionSettings = { repTarget: number; increment: number };
 export type ExerciseMeta = {
@@ -53,7 +54,8 @@ export function nextLoad(
   exercise: ExerciseMeta,
   settings?: ProgressionSettings,
 ) {
-  const old = Number(previous[index]?.weight);
+  if (!previous[index] || !validSets([previous[index]])) return null;
+  const old = Number(previous[index].weight);
   if (exercise.equipment === "body only" || !Number.isFinite(old) || old <= 0)
     return null;
   const { increment } = settingsFor(exercise, settings);
@@ -84,7 +86,7 @@ export function readyToProgress(
       .slice(0, 2)
       .every(
         (sets) =>
-          sets.length > 0 &&
+          validSets(sets) &&
           sets.every(
             (s) =>
               Number.isInteger(Number(s.reps)) &&
@@ -102,6 +104,8 @@ export function progressionAdvice(
 ) {
   if (!history[0]?.length) return "Log a session to see your next load step.";
   const cfg = settingsFor(exercise, settings);
+  if (!validSets(history[0]))
+    return "Your last session has partial or unlogged sets. Only complete sets provide next-load previews; partial sessions do not trigger an increase.";
   if (
     exercise.equipment === "body only" ||
     history[0].every((s) => Number(s.weight) === 0)

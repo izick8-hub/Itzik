@@ -107,3 +107,9 @@ Next weight plan stores per-exercise rep targets and equipment increments in pro
 The same pure progression module provides placeholders, previews, and explanatory text. Zero/bodyweight loads do not get external-weight suggestions. Readiness requires at least one rep over the target in every set of each of the two most recent sessions. This is a conservative application rule; it does not establish good technique, exertion, or recovery.
 
 Reference: ACSM, Progression Models in Resistance Training for Healthy Adults, 2009, PMID 19204579 (https://pubmed.ncbi.nlm.nih.gov/19204579/). The established recommendation is approximately 2–10% load increases when the prescribed load can be performed for one or two repetitions above the target. Live retrieval returned a proxy 403; do not claim a completed live literature search. PubMed access was added to the pending environment network draft, preserving prior requested research domains.
+
+## Saving partial workouts
+
+Finish & save workout accepts skipped exercises, empty set rows and one-sided weight/reps entries. At least one field must be entered; typed weights must be nonnegative finite numbers and typed reps positive integers. Entirely blank exercises are omitted from that session but remain selected for future sessions. Partial rows retain their original indices and blank strings; they are never converted to zero. Editing follows the same rules.
+
+Volume uses complete valid sets only and displays an unknown total when no complete sets exist. Session comparisons and progression-readiness checks exclude incomplete sets; next-load previews are withheld for a row missing weight or reps. Existing saved records are not migrated or overwritten.

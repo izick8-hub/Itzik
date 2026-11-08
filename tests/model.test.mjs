@@ -16,7 +16,7 @@ test("completed sets accept bodyweight zero and fractional kilograms", () =>
     ]),
     true,
   ));
-test("partial, negative and fractional rep results cannot finish a workout", () => {
+test("incomplete or invalid sets do not count as fully completed sets", () => {
   for (const set of [
     { weight: "", reps: "8" },
     { weight: "-1", reps: "8" },

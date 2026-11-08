@@ -19,6 +19,8 @@ import {
   emptyData,
   newSets,
   validSets,
+  validPartialSets,
+  enteredSessionSets,
   keyFor,
 } from "./src/model";
 import { summary, comparison, volume } from "./src/insights";
@@ -491,13 +493,16 @@ export default function App() {
     });
   }
   function finish() {
-    if (
-      !ids.length ||
-      !draft ||
-      !ids.every((id) => validSets(draft.sets[id] || newSets()))
-    ) {
+    const entered = enteredSessionSets(ids, draft?.sets || {});
+    if (!draft || !Object.keys(entered).length) {
       window.alert(
-        "Complete your sets\nEnter a weight of zero or more and positive whole-number reps for every set.",
+        "Add at least one weight or rep before saving your workout. Skipped exercises and blank sets are allowed.",
+      );
+      return;
+    }
+    if (!Object.values(entered).every(validPartialSets)) {
+      window.alert(
+        "Check the values you entered: weights must be zero or more, and reps must be positive whole numbers. Blank fields are allowed.",
       );
       return;
     }
@@ -513,24 +518,36 @@ export default function App() {
             ...(d.sessions[day] || []),
             {
               ...draft,
-              sets: Object.fromEntries(ids.map((id) => [id, draft.sets[id]])),
+              sets: entered,
             },
           ],
         },
       };
     });
     setHistoryIndex({});
-    setNotice("Workout saved. Another session in the bank.");
+    setNotice(
+      "Workout saved. Blank fields stay unlogged; skipped exercises stay in your list.",
+    );
   }
   function saveEdit() {
     if (!editing) return;
-    if (!Object.values(editing.session.sets).every(validSets)) {
+    const entered = enteredSessionSets(
+      Object.keys(editing.session.sets),
+      editing.session.sets,
+    );
+    if (
+      !Object.keys(entered).length ||
+      !Object.values(entered).every(validPartialSets)
+    ) {
       window.alert(
-        "Check your sets. Use a nonnegative weight and positive whole-number reps.",
+        "Keep at least one entered weight or rep. Blank fields are allowed; entered weights must be zero or more and reps positive whole numbers.",
       );
       return;
     }
-    const target = editing;
+    const target = {
+      ...editing,
+      session: { ...editing.session, sets: entered },
+    };
     setData((d) => ({
       ...d,
       sessions: {
@@ -711,9 +728,9 @@ export default function App() {
               />
               <Metric
                 label="TRAINING VOLUME"
-                value={stats.count ? fmt(stats.totalVolume) : "—"}
-                unit={stats.count ? "kg" : ""}
-                detail="All-time weight × reps"
+                value={stats.hasVolume ? fmt(stats.totalVolume) : "—"}
+                unit={stats.hasVolume ? "kg" : ""}
+                detail="Complete logged sets · weight × reps"
               />
               <Metric
                 label="RECENT PROGRESS"
@@ -785,13 +802,17 @@ export default function App() {
                         </p>
                       </div>
                       <strong>
-                        {fmt(
-                          Object.values(s.sets).reduce(
-                            (n, x) => n + volume(x),
-                            0,
-                          ),
-                        )}
-                        <small> kg volume</small>
+                        {Object.values(s.sets).some((sets) =>
+                          sets.some((set) => validSets([set])),
+                        )
+                          ? fmt(
+                              Object.values(s.sets).reduce(
+                                (n, x) => n + volume(x),
+                                0,
+                              ),
+                            )
+                          : "—"}
+                        <small> kg logged volume</small>
                       </strong>
                     </button>
                   ))}

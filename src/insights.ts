@@ -1,6 +1,10 @@
+import { validSets } from "./model.ts";
 import type { Data, Session, SetEntry } from "./model";
 export const volume = (sets: SetEntry[]) =>
-  sets.reduce((sum, s) => sum + Number(s.weight) * Number(s.reps), 0);
+  sets.reduce(
+    (sum, s) => sum + (validSets([s]) ? Number(s.weight) * Number(s.reps) : 0),
+    0,
+  );
 const localDay = (date: string) => {
   const d = new Date(date);
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
@@ -23,6 +27,11 @@ export function summary(data: Data, now = new Date()) {
     sessions,
     count: sessions.length,
     streak,
+    hasVolume: sessions.some((s) =>
+      Object.values(s.sets).some((sets) =>
+        sets.some((set) => validSets([set])),
+      ),
+    ),
     totalVolume: sessions.reduce(
       (n, s) =>
         n + Object.values(s.sets).reduce((v, sets) => v + volume(sets), 0),
@@ -33,7 +42,13 @@ export function summary(data: Data, now = new Date()) {
 }
 export function comparison(latest: SetEntry[], previous: SetEntry[]) {
   // Compare mean load and total reps only when set counts match.
-  if (!latest.length || latest.length !== previous.length) return null;
+  if (
+    !latest.length ||
+    latest.length !== previous.length ||
+    !validSets(latest) ||
+    !validSets(previous)
+  )
+    return null;
   const mean = (s: SetEntry[]) =>
     s.reduce((n, x) => n + Number(x.weight), 0) / s.length;
   const reps = (s: SetEntry[]) => s.reduce((n, x) => n + Number(x.reps), 0);

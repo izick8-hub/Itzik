@@ -67,3 +67,31 @@ export function validSets(sets: SetEntry[]) {
   );
 }
 export const keyFor = (day: number, group: string) => `${day}:${group}`;
+
+export const hasSetEntry = (set: SetEntry) =>
+  set.weight.trim() !== "" || set.reps.trim() !== "";
+export function validPartialSets(sets: SetEntry[]) {
+  return sets.every(
+    (set) =>
+      (set.weight.trim() === "" ||
+        (Number.isFinite(Number(set.weight)) && Number(set.weight) >= 0)) &&
+      (set.reps.trim() === "" ||
+        (/^\d+$/.test(set.reps.trim()) && Number(set.reps) > 0)),
+  );
+}
+export function enteredSessionSets(
+  ids: string[],
+  sets: Record<string, SetEntry[]>,
+): Record<string, SetEntry[]> {
+  return Object.fromEntries(
+    ids
+      .filter((id) => (sets[id] || []).some(hasSetEntry))
+      .map((id) => [
+        id,
+        sets[id].map((set) => ({
+          weight: set.weight.trim(),
+          reps: set.reps.trim(),
+        })),
+      ]),
+  );
+}
