@@ -185,3 +185,30 @@ test("Missing migration blocks cloud use instead of presenting a ready household
     page.getByRole("heading", { name: "בית משותף בענן" }),
   ).toHaveCount(0);
 });
+test("Cloud purchase can finish without a receipt and never changes the local backup", async ({
+  page,
+}) => {
+  const f = await fixture(page);
+  await page.goto("/");
+  await page
+    .getByRole("button", { name: "רשימת קניות חדשה", exact: true })
+    .click();
+  await page.getByLabel("איך נקרא לקנייה?").fill("קנייה בענן ללא קבלה");
+  const before = await page.evaluate(() =>
+    localStorage.getItem("together-cart:data:v1"),
+  );
+  await page.getByRole("button", { name: "יש לנו דייט בסופר ♡" }).click();
+  await page
+    .getByRole("button", { name: "סיום קנייה ללא קבלה", exact: true })
+    .click();
+  await expect(page.getByText("קנייה שהושלמה", { exact: true })).toBeVisible();
+  expect(f.data.lists[0].status).toBe("completed");
+  expect(f.data.receipts.length).toBe(0);
+  expect(f.commits).toBe(2);
+  expect(
+    await page.evaluate(() => localStorage.getItem("together-cart:data:v1")),
+  ).toBe(before);
+  await expect(
+    page.getByRole("button", { name: /העלאת קבלה בדיעבד/ }),
+  ).toBeVisible();
+});

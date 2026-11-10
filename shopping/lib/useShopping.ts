@@ -48,5 +48,6 @@ export function useShopping() {
     setError: controller.setError,
     retry: controller.retry,
     importLocal: controller.importLocal,
+    dismissNotice: controller.dismissNotice,
   };
 }

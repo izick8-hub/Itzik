@@ -13,13 +13,29 @@ export type Action =
   | { type: "product"; value: Product }
   | { type: "receipt"; value: Receipt }
   | { type: "confirmReceipt"; value: Receipt }
-  | { type: "duplicate"; id: string; date: string };
+  | { type: "duplicate"; id: string; date: string }
+  | { type: "completeList"; id: string; expected: number };
 export function applyAction(data: Data, action: Action): Data {
   const upsert = <T extends { id: string }>(rows: T[], value: T) => [
     ...rows.filter((r) => r.id !== value.id),
     value,
   ];
   switch (action.type) {
+    case "completeList": {
+      const list = data.lists.find((l) => l.id === action.id);
+      if (!list) throw Error("הרשימה לא נמצאה.");
+      if (list.status === "completed") return data;
+      if (list.version !== action.expected)
+        throw Error("הרשימה השתנתה. רעננו ונסו שוב.");
+      return {
+        ...data,
+        lists: data.lists.map((l) =>
+          l.id === list.id
+            ? { ...l, status: "completed", version: l.version + 1 }
+            : l,
+        ),
+      };
+    }
     case "list": {
       const old = data.lists.find((l) => l.id === action.value.id);
       if (old && old.version !== action.value.version)

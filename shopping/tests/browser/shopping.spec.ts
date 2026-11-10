@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { readFile, writeFile } from "node:fs/promises";
 test("Hebrew local shopping journey, persistence, receipt review and duplication", async ({
   page,
 }) => {
@@ -242,4 +243,125 @@ test("Category filtering includes products beyond the initial search limit", asy
   await expect(
     page.getByRole("button", { name: "🥛 חלב מוצרי חלב וביצים", exact: true }),
   ).toBeVisible();
+});
+test("Finish without a receipt preserves the purchase and supports a retroactive receipt after creating the next list", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page
+    .getByRole("button", { name: "רשימת קניות חדשה", exact: true })
+    .click();
+  await page.getByLabel("איך נקרא לקנייה?").fill("הקנייה הישנה");
+  await page.getByRole("button", { name: "יש לנו דייט בסופר ♡" }).click();
+  await page.getByRole("button", { name: "הוספת מוצר", exact: true }).click();
+  await page.getByRole("textbox", { name: "חיפוש מוצר" }).fill("מלפ");
+  await page.getByRole("button", { name: "🥒 מלפפונים ירקות" }).click();
+  await page.getByLabel("כמות", { exact: true }).fill("1.5");
+  await page.getByRole("button", { name: "להוסיף לרשימה" }).click();
+  await page.getByRole("button", { name: "סגירה", exact: true }).click();
+  await page.getByRole("button", { name: "סיום קנייה ללא קבלה" }).click();
+  await expect(page.getByText("קנייה שהושלמה", { exact: true })).toBeVisible();
+  const saved = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem("together-cart:data:v1")!),
+  );
+  expect(saved.receipts).toHaveLength(0);
+  expect(saved.items[0].quantity).toBe(1.5);
+  expect(saved.items[0].checked).toBe(false);
+  await page.getByRole("button", { name: "רשימה חדשה", exact: true }).click();
+  await page.getByLabel("איך נקרא לקנייה?").fill("הקנייה הבאה");
+  await page.getByRole("button", { name: "יש לנו דייט בסופר ♡" }).click();
+  await page.getByRole("button", { name: "הקניות שלנו", exact: true }).click();
+  const old = page.locator(".history-card").filter({
+    has: page.getByRole("heading", { name: "הקנייה הישנה", exact: true }),
+  });
+  await old.getByRole("button", { name: /העלאת קבלה בדיעבד/ }).click();
+  await page.getByRole("button", { name: "הזנת קבלה ידנית" }).click();
+  await page.getByRole("button", { name: "הוספת שורה מהקבלה" }).click();
+  await page.getByLabel("שם בקבלה").fill("מלפפונים");
+  await page.getByLabel("סופי לשורה ₪").fill("7");
+  await page.getByLabel("סכום כולל בקבלה ₪").fill("7");
+  await page.getByLabel("בדקתי: השם, הכמות, היחידה והסכום נכונים").check();
+  await page.getByRole("button", { name: "בדקנו, שומרים את הקבלה" }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  const result = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem("together-cart:data:v1")!),
+  );
+  expect(result.receipts).toHaveLength(1);
+  expect(result.receipts[0].list_id).toBe(
+    result.lists.find((l: { name: string }) => l.name === "הקנייה הישנה").id,
+  );
+  expect(
+    result.lists.find((l: { name: string }) => l.name === "הקנייה הבאה").status,
+  ).toBe("planned");
+});
+test("Moani artwork and the notification center fit mobile without hiding controls", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await expect(
+    page.getByRole("img", { name: "מואני, הכלבה שלנו" }).first(),
+  ).toBeVisible();
+  expect((await page.request.get("/moani-atlas.png")).status()).toBe(200);
+  await page
+    .getByRole("button", { name: "העדכונים של מואני", exact: true })
+    .click();
+  await expect(page.getByRole("dialog")).toContainText(
+    "מואני נחה. אין עדכונים חדשים כרגע.",
+  );
+  await page.getByRole("button", { name: "סגירה", exact: true }).click();
+  for (const width of [320, 390, 768, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({ path: "/tmp/moani-mobile.png", fullPage: true });
+});
+test("A bookmarked app detects a real server metadata change through its service worker without deleting data", async ({
+  page,
+}) => {
+  const original = await readFile("out/version.json", "utf8");
+  try {
+    await page.goto("/");
+    await page.evaluate(async () => {
+      await navigator.serviceWorker.ready;
+    });
+    await page.reload();
+    await page.evaluate(() =>
+      localStorage.setItem("bookmark-preservation-fixture", "retained"),
+    );
+    await writeFile(
+      "out/version.json",
+      JSON.stringify({ version: "new-release-fixture" }),
+    );
+    await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+    await expect(
+      page.getByText("מואני מצאה גרסה חדשה 🐾", { exact: true }),
+    ).toBeVisible();
+    await page
+      .getByRole("button", { name: "רשימת קניות חדשה", exact: true })
+      .click();
+    await page.getByLabel("איך נקרא לקנייה?").fill("טיוטה לא שמורה");
+    await expect(
+      page.getByRole("button", { name: "טעינת העדכון", exact: true }),
+    ).toBeDisabled();
+    await page.getByRole("button", { name: "סגירה", exact: true }).click();
+    await Promise.all([
+      page.waitForEvent("framenavigated"),
+      page.getByRole("button", { name: "טעינת העדכון", exact: true }).click(),
+    ]);
+    await expect(
+      page.getByRole("heading", { name: "הכי כיף לקנות ביחד." }),
+    ).toBeVisible();
+    expect(
+      await page.evaluate(() =>
+        localStorage.getItem("bookmark-preservation-fixture"),
+      ),
+    ).toBe("retained");
+  } finally {
+    await writeFile("out/version.json", original);
+  }
 });

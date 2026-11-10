@@ -59,6 +59,8 @@ try {
         "exec",
         name,
         "pg_isready",
+        "-h",
+        "127.0.0.1",
         "-U",
         "postgres",
       ],
@@ -75,9 +77,12 @@ try {
   sql("supabase/migrations/202611050001_shopping.sql");
   sql("supabase/migrations/202611080001_cloud_sync.sql");
   sql("supabase/migrations/202611080001_cloud_sync.sql");
+  sql("supabase/migrations/202611110001_finish_without_receipt.sql");
+  sql("supabase/migrations/202611110001_finish_without_receipt.sql");
   sql("tests/postgres/cloud-sync.sql");
+  sql("tests/postgres/finish.sql");
   console.log(
-    "Real PostgreSQL integration passed: both migrations, repeatability, two household members, third-user isolation, writes, readback, stale edits, idempotent import, rollback and deletion trigger. This is not a live Supabase Auth/Realtime service test.",
+    "Real PostgreSQL integration passed: shopping migrations, repeatability, two household members, third-user isolation, writes, readback, stale edits, idempotent import, rollback and deletion trigger. This is not a live Supabase Auth/Realtime service test.",
   );
 } finally {
   if (created) docker(["rm", "-f", name], { stdio: "ignore" });

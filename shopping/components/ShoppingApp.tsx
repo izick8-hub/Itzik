@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import {
+  Bell,
+  PawPrint,
   ArrowLeft,
   ArrowRight,
   CalendarDays,
@@ -32,6 +34,9 @@ import {
   X,
 } from "lucide-react";
 import Illustration from "./Illustration";
+import Moani from "./Moani";
+import { listAddedMessage } from "@/lib/notifications";
+import { useAppUpdates, APP_VERSION } from "@/lib/useAppUpdates";
 import {
   catalog,
   categories,
@@ -73,7 +78,8 @@ const dateText = (s: string, short = false) =>
 const uid = () => crypto.randomUUID();
 const base = process.env.NEXT_PUBLIC_BASE_PATH || "";
 type Tab = "home" | "list" | "history" | "prices";
-type Modal = "new" | "add" | "settings" | "receipt" | "editList" | null;
+type Modal =
+  "new" | "add" | "settings" | "receipt" | "editList" | "notifications" | null;
 function ModalShell({
   title,
   children,
@@ -213,6 +219,7 @@ function Calendar({
 }
 export default function ShoppingApp() {
   const store = useShopping();
+  const updates = useAppUpdates();
   const { data, dispatch, busy } = store;
   const [tab, setTab] = useState<Tab>("home"),
     [modal, setModal] = useState<Modal>(null),
@@ -268,6 +275,14 @@ export default function ShoppingApp() {
   const newListId = useRef<string | null>(null);
   const newItemId = useRef<string | null>(null);
   const close = useRef(() => setModal(null));
+  const seenNotices = useRef(new Map<string, number>());
+  useEffect(() => {
+    const fresh = [...store.notifications]
+      .sort((a, b) => b.created_at - a.created_at)
+      .find((n) => seenNotices.current.get(n.id) !== n.count);
+    for (const n of store.notifications) seenNotices.current.set(n.id, n.count);
+    if (fresh) setToast(`${fresh.title} · ${fresh.body}`);
+  }, [store.notifications]);
   useEffect(() => {
     setImportConfirmed(false);
   }, [store.household, store.session?.user.id]);
@@ -279,7 +294,10 @@ export default function ShoppingApp() {
   useEffect(() => {
     if ("serviceWorker" in navigator)
       void navigator.serviceWorker
-        .register(`${base}/sw.js`, { scope: `${base}/` })
+        .register(`${base}/sw.js`, {
+          scope: `${base}/`,
+          updateViaCache: "none",
+        })
         .catch(() => {});
   }, []);
   useEffect(
@@ -325,10 +343,7 @@ export default function ShoppingApp() {
       created_at: new Date().toISOString(),
     };
     if (
-      await run(
-        () => dispatch({ type: "list", value: l }),
-        "הרשימה שלנו מוכנה. מה קונים? 🥑",
-      )
+      await run(() => dispatch({ type: "list", value: l }), listAddedMessage(l))
     ) {
       setActiveId(l.id);
       setTab("list");
@@ -357,7 +372,9 @@ export default function ShoppingApp() {
       await run(
         () =>
           dispatch({ type: "item", value: item, expected: editing?.version }),
-        editing ? "הכמות עודכנה" : "נוסף לרשימה באהבה",
+        editing
+          ? "מואני מעדכנת: הכמות עודכנה 🐾"
+          : "מואני הוסיפה מוצר חדש לרשימה 🐾",
       )
     ) {
       newItemId.current = null;
@@ -399,15 +416,16 @@ export default function ShoppingApp() {
     setUnit(item.unit);
     setModal("add");
   }
-  async function openReceipt(existing?: Receipt) {
-    if (!active && !existing) return;
+  async function openReceipt(existing?: Receipt, target?: List) {
+    const purchase = target || active;
+    if (!purchase && !existing) return;
     setReceipt(
       existing
         ? structuredClone(existing)
         : {
             id: uid(),
-            list_id: active!.id,
-            date: active!.date,
+            list_id: purchase!.id,
+            date: purchase!.date,
             store: "יוחננוף",
             total: 0,
             status: "draft",
@@ -430,6 +448,23 @@ export default function ShoppingApp() {
               ).data;
         if (blob) setPhotoUrl(URL.createObjectURL(blob));
       });
+  }
+  async function finishWithoutReceipt() {
+    if (!active) return;
+    if (
+      await run(
+        () =>
+          dispatch({
+            type: "completeList",
+            id: active.id,
+            expected: active.version,
+          }),
+        "מואני שומרת: הקנייה הסתיימה! אפשר לצרף קבלה אחר כך 🐾",
+      )
+    ) {
+      setTab("history");
+      setActiveId("");
+    }
   }
   async function uploadPhoto(file?: File) {
     if (!file || !receipt) return;
@@ -585,10 +620,22 @@ export default function ShoppingApp() {
             <Heart size={11} className="brand-heart" fill="currentColor" />
           </span>
           <span>
-            עגלה לשניים<small>קצת קניות, הרבה אהבה</small>
+            עגלה לשניים<small>של שנינו ושל מואני 🐾</small>
           </span>
         </a>
         <div className="header-actions">
+          <button
+            className="icon-button notification-button"
+            aria-label={`העדכונים של מואני${store.notifications.length ? `, ${store.notifications.length} עדכונים` : ""}`}
+            onClick={() => setModal("notifications")}
+          >
+            <Bell size={21} />
+            {store.notifications.length > 0 && (
+              <span className="notification-count">
+                {store.notifications.length}
+              </span>
+            )}
+          </button>
           <span
             className={`sync-pill ${store.mode === "cloud" ? "cloud" : ""}`}
           >
@@ -616,6 +663,39 @@ export default function ShoppingApp() {
         </div>
       </header>
       <main className="app-shell">
+        {updates.available && (
+          <div className="update-banner" role="status">
+            <Moani pose="celebrate" className="moani-update" decorative />
+            <div>
+              <strong>מואני מצאה גרסה חדשה 🐾</strong>
+              <p>
+                העדכון ישמור את הנתונים שלכם. סיימו ושמרו עריכות פתוחות לפני
+                טעינה.
+              </p>
+            </div>
+            <button
+              className="secondary"
+              disabled={
+                busy ||
+                !store.online ||
+                !!(modal && modal !== "settings" && modal !== "notifications")
+              }
+              onClick={updates.load}
+            >
+              טעינת העדכון
+            </button>
+          </div>
+        )}
+        <Moani
+          pose="shop"
+          className="moani-watermark watermark-one"
+          decorative
+        />
+        <Moani
+          pose="rest"
+          className="moani-watermark watermark-two"
+          decorative
+        />
         {store.cloudAvailable && store.mode !== "cloud" && (
           <div className="notice">
             <span>{store.sync}</span>
@@ -726,6 +806,7 @@ export default function ShoppingApp() {
                       alt="הדמויות שלכם מחייכות יחד עם עגלת קניות, על בסיס האיורים שצירפתם"
                       fetchPriority="high"
                     />
+                    <Moani pose="shop" className="moani-hero" />
                   </div>
                   <span className="hero-sparkle">✧</span>
                 </section>
@@ -802,6 +883,7 @@ export default function ShoppingApp() {
                       })()
                     ) : (
                       <div className="first-list">
+                        <Moani pose="shop" className="moani-empty" />
                         <span className="big-emoji">📝</span>
                         <h3>הקנייה הבאה מתחילה כאן</h3>
                         <p>עוד אין לנו רשימה. נוסיף כמה דברים טובים?</p>
@@ -813,6 +895,7 @@ export default function ShoppingApp() {
                   </section>
                   <section className="love-note">
                     <span className="tape" />
+                    <Moani pose="notice" className="moani-note" />
                     <div className="note-icon">💌</div>
                     <span className="eyebrow">דברים קטנים, רגעים שלנו</span>
                     <h3>
@@ -820,7 +903,7 @@ export default function ShoppingApp() {
                       <br />
                       השני זוכר שוקולד.
                     </h3>
-                    <p>הרשימה תעזור לזכור את השאר.</p>
+                    <p>מואני תעזור לזכור את השאר. וחטיפים, ברור.</p>
                     <div className="note-bottom">🥛 + 🍫 = ♡</div>
                   </section>
                 </div>
@@ -892,7 +975,10 @@ export default function ShoppingApp() {
               <>
                 <section className="page-heading">
                   <div>
-                    <span className="eyebrow">הרשימה שלנו</span>
+                    <span className="eyebrow">
+                      <PawPrint size={14} />
+                      הרשימה שלנו, בפיקוח מואני
+                    </span>
                     <h1>{active ? active.name : "מה חסר בבית?"}</h1>
                     {active && (
                       <p>
@@ -1060,7 +1146,7 @@ export default function ShoppingApp() {
                       </div>
                     ) : (
                       <div className="empty card">
-                        <span className="big-emoji">🥑</span>
+                        <Moani pose="shop" className="moani-empty" />
                         <h2>עגלה ריקה, מלא אפשרויות</h2>
                         <p>חפשו מוצר או הוסיפו משהו משלכם.</p>
                         <button className="primary" onClick={openAdd}>
@@ -1069,16 +1155,50 @@ export default function ShoppingApp() {
                       </div>
                     )}
                     <div className="finish-card">
+                      <Moani
+                        pose={
+                          active.status === "completed" ? "rest" : "celebrate"
+                        }
+                        className="moani-finish"
+                      />
                       <div>
-                        <h3>הכול בעגלה?</h3>
-                        <p>שומרים קבלה והופכים את הקנייה לזיכרון מסודר.</p>
+                        <h3>
+                          {active.status === "completed"
+                            ? "מואני שומרת את הקנייה שלנו"
+                            : "מואני שואלת: סיימנו לקנות?"}
+                        </h3>
+                        <p>
+                          לא חייבים קבלה כדי לסיים. הרשימה והמוצרים נשמרים, ואת
+                          הקבלה אפשר להוסיף אחר כך.
+                        </p>
                       </div>
-                      <button
-                        className="primary"
-                        onClick={() => void openReceipt()}
-                      >
-                        <ImagePlus size={18} /> סיימנו לקנות! העלאת קבלה 📸
-                      </button>
+                      <div className="finish-actions">
+                        {active.status !== "completed" && (
+                          <button
+                            className="primary"
+                            disabled={busy}
+                            onClick={() => void finishWithoutReceipt()}
+                          >
+                            <Check size={18} /> סיום קנייה ללא קבלה
+                          </button>
+                        )}
+                        <button
+                          className="outline"
+                          disabled={busy}
+                          onClick={() => void openReceipt()}
+                        >
+                          <ImagePlus size={18} />
+                          {active.status === "completed"
+                            ? "העלאת קבלה בדיעבד"
+                            : "סיימנו לקנות! העלאת קבלה 📸"}
+                        </button>
+                        {active.status === "completed" && (
+                          <button className="primary" onClick={openNew}>
+                            <Plus size={18} />
+                            רשימה חדשה
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </>
                 ) : (
@@ -1107,8 +1227,8 @@ export default function ShoppingApp() {
                 </section>
                 {!data.lists.length ? (
                   <div className="empty card">
-                    <History />
-                    <h2>עוד נצבור כאן זיכרונות</h2>
+                    <Moani pose="rest" className="moani-empty" />
+                    <h2>מואני שומרת מקום לזיכרונות שלנו</h2>
                     <p>הרשימות והקבלות שלכם יופיעו כאן אחרי הקנייה הראשונה.</p>
                   </div>
                 ) : (
@@ -1175,6 +1295,23 @@ export default function ShoppingApp() {
                                 <Copy size={16} /> שכפול
                               </button>
                             </div>
+                            {l.status === "completed" && (
+                              <button
+                                className="receipt-link retro-receipt"
+                                onClick={() =>
+                                  void openReceipt(
+                                    receipts.find((r) => r.status === "draft"),
+                                    l,
+                                  )
+                                }
+                              >
+                                <ImagePlus size={16} />
+                                {receipts.some((r) => r.status === "confirmed")
+                                  ? "הוספת קבלה נוספת"
+                                  : "העלאת קבלה בדיעבד"}
+                                <span>מואני תשמור גם אותה 🐾</span>
+                              </button>
+                            )}
                             {receipts.map((r) => (
                               <button
                                 className="receipt-link"
@@ -1339,7 +1476,7 @@ export default function ShoppingApp() {
                     r.lines.some((l) => l.product_id),
                   ) && (
                     <div className="empty card">
-                      <span className="big-emoji">🧾</span>
+                      <Moani pose="rest" className="moani-empty" />
                       <h2>המחירים שלכם, הסיפור שלכם</h2>
                       <p>
                         אשרו קבלה והתאימו את השורות למוצרים כדי לראות היסטוריה
@@ -1363,7 +1500,11 @@ export default function ShoppingApp() {
           </>
         )}
         <footer className="app-footer">
-          נעשה מקום לדברים הטובים <Heart size={12} /> עגלה לשניים
+          <Moani pose="rest" className="moani-footer" decorative />
+          <span>
+            עגלה לשניים, ושלוש נשמות בבית <PawPrint size={12} /> מואני שומרת
+            עלינו<small className="app-version">גרסה {APP_VERSION}</small>
+          </span>
         </footer>
       </main>
       <nav className="bottom-nav" aria-label="ניווט ראשי">
@@ -1392,9 +1533,60 @@ export default function ShoppingApp() {
       </nav>
       {toast && (
         <div className="toast" role="status">
-          <Check size={18} />
-          {toast}
+          <Moani pose="notice" className="moani-toast" decorative />
+          <span>{toast}</span>
         </div>
+      )}
+      {modal === "notifications" && (
+        <ModalShell title="העדכונים של מואני 🐾" close={close.current}>
+          <div className="moani-notice-intro">
+            <Moani pose="notice" />
+            <p>
+              מואני מעדכנת על רשימות ומוצרים חדשים כשהאתר פתוח. התראות מערכת
+              כשהאתר סגור אינן פעילות.
+            </p>
+          </div>
+          <div role="log" aria-live="polite" className="notice-center">
+            {store.notifications.length ? (
+              store.notifications.map((n) => (
+                <article key={n.id}>
+                  <button
+                    className="notice-open"
+                    onClick={() => {
+                      setActiveId(n.list_id);
+                      setTab("list");
+                      setModal(null);
+                      store.dismissNotice(n.id);
+                    }}
+                  >
+                    <strong>{n.title}</strong>
+                    <small>{n.body}</small>
+                  </button>
+                  <button
+                    className="icon-button"
+                    aria-label="סגירת העדכון"
+                    onClick={() => store.dismissNotice(n.id)}
+                  >
+                    <X size={17} />
+                  </button>
+                </article>
+              ))
+            ) : (
+              <div className="empty">
+                <Moani pose="rest" className="moani-empty" />
+                <p>מואני נחה. אין עדכונים חדשים כרגע.</p>
+              </div>
+            )}
+          </div>
+          {store.notifications.length > 0 && (
+            <button
+              className="text-button full"
+              onClick={() => store.dismissNotice()}
+            >
+              ניקוי העדכונים
+            </button>
+          )}
+        </ModalShell>
       )}
       {(modal === "new" || modal === "editList") && (
         <ModalShell
@@ -1944,6 +2136,31 @@ export default function ShoppingApp() {
       )}
       {modal === "settings" && (
         <ModalShell title="הבית הקטן שלנו ⚙️" close={close.current}>
+          <section className="settings-section app-updates">
+            <Moani pose="notice" className="moani-settings" decorative />
+            <h3>מואני בודקת עדכונים</h3>
+            <p>
+              גרסה מותקנת: <bdi>{APP_VERSION}</bdi>. גם דרך קיצור הדרך במסך הבית
+              אפשר לבדוק אם התפרסם עדכון.
+            </p>
+            <button
+              className="outline full"
+              disabled={updates.checking}
+              onClick={() => void updates.check(true)}
+            >
+              בדיקת עדכון לאתר
+            </button>
+            {updates.message && <p role="status">{updates.message}</p>}
+            {updates.available && (
+              <button
+                className="primary full"
+                disabled={busy || !store.online}
+                onClick={updates.load}
+              >
+                טעינת העדכון
+              </button>
+            )}
+          </section>
           <section className="settings-section">
             <h3>
               {store.mode === "cloud"

@@ -2007,3 +2007,324 @@ fieldset {
   background-size: 240%;
   background-position: 63% 14%;
 }
+/* Moani's four watercolor poses share one lightweight request and one reusable atlas. */
+.moani-art {
+  display: inline-block;
+  width: 112px;
+  height: 112px;
+  flex-shrink: 0;
+  background-size: 200% 200%;
+  background-repeat: no-repeat;
+  vertical-align: middle;
+  pointer-events: none;
+}
+.app-shell {
+  position: relative;
+  isolation: isolate;
+}
+.moani-watermark {
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  opacity: 0.045;
+  z-index: -1;
+  max-width: 35vw;
+}
+.watermark-one {
+  top: 120px;
+  right: 0;
+  transform: rotate(-12deg);
+}
+.watermark-two {
+  bottom: 130px;
+  left: 0;
+  transform: rotate(10deg);
+}
+.moani-hero {
+  position: absolute;
+  width: 135px;
+  height: 135px;
+  bottom: 2px;
+  left: -35px;
+  filter: drop-shadow(0 7px 6px #76594415);
+}
+.moani-note {
+  width: 120px;
+  height: 120px;
+  margin: -9px auto 0;
+}
+.love-note .note-icon {
+  display: none;
+}
+.moani-empty {
+  width: 132px;
+  height: 132px;
+}
+.first-list .big-emoji {
+  display: none;
+}
+.first-list h3 {
+  margin-top: 0;
+}
+.moani-finish {
+  width: 95px;
+  height: 95px;
+}
+.finish-card {
+  flex-wrap: wrap;
+}
+.finish-card > div:not(.finish-actions) {
+  flex: 1;
+  min-width: 160px;
+}
+.finish-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+.finish-actions > button {
+  flex: 1;
+  min-width: 200px;
+}
+.retro-receipt {
+  flex-wrap: wrap;
+  min-height: 46px;
+}
+.retro-receipt > span {
+  margin-right: auto;
+  font-size: 10px;
+  color: #9c8173;
+}
+.notification-button {
+  position: relative;
+}
+.notification-count {
+  position: absolute;
+  top: 0;
+  left: 0;
+  min-width: 17px;
+  height: 17px;
+  border-radius: 10px;
+  background: #b9637a;
+  color: white;
+  font-size: 10px;
+  display: grid;
+  place-items: center;
+  padding: 0 4px;
+}
+.header-actions {
+  gap: 12px;
+}
+.moani-toast {
+  width: 58px;
+  height: 58px;
+  margin: -8px -5px;
+}
+.toast {
+  padding: 10px 18px;
+  max-width: min(540px, 94vw);
+}
+.moani-footer {
+  width: 78px;
+  height: 78px;
+}
+.app-footer {
+  gap: 12px;
+}
+.app-footer > span {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+.app-version {
+  font-size: 10px;
+  display: block;
+  width: 100%;
+  color: #9a8275;
+}
+.moani-notice-intro {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.moani-notice-intro > p {
+  font-size: 12px;
+  color: #937b6b;
+}
+.moani-notice-intro .moani-art {
+  width: 110px;
+  height: 110px;
+}
+.notice-center article {
+  border: 1px solid #e8d9cc;
+  border-radius: 15px;
+  padding: 12px;
+  margin: 13px 0;
+  display: flex;
+  gap: 5px;
+  background: #fffdf7;
+}
+.notice-open {
+  border: 0;
+  background: none;
+  flex: 1;
+  text-align: right;
+  padding: 0;
+  min-height: 52px;
+}
+.notice-open strong {
+  display: block;
+  font-size: 13px;
+  color: #935f6a;
+}
+.notice-open small {
+  display: block;
+  margin-top: 7px;
+}
+.app-updates {
+  position: relative;
+  padding-left: 90px;
+}
+.moani-settings {
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 85px;
+  height: 85px;
+}
+.update-banner {
+  position: relative;
+  z-index: 4;
+  border: 1px solid #d9d7b8;
+  background: #f6f6e8;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 14px 20px;
+  border-radius: 18px;
+  margin-bottom: 22px;
+}
+.update-banner strong {
+  font-size: 14px;
+}
+.update-banner p {
+  font-size: 11px;
+  color: #8c8164;
+}
+.moani-update {
+  width: 65px;
+  height: 65px;
+}
+.update-banner .secondary {
+  margin-right: auto;
+  white-space: nowrap;
+}
+@media (max-width: 760px) {
+  .moani-watermark {
+    right: 0;
+    left: auto;
+    max-width: 45vw;
+    width: 180px;
+    height: 180px;
+  }
+  .watermark-two {
+    right: auto;
+    left: 0;
+  }
+  .moani-hero {
+    width: 80px;
+    height: 80px;
+    left: -8px;
+    bottom: -5px;
+  }
+  .moani-note {
+    width: 100px;
+    height: 100px;
+  }
+  .love-note {
+    min-height: 260px;
+  }
+  .moani-finish {
+    width: 90px;
+    height: 90px;
+    margin: auto;
+  }
+  .finish-card > div:not(.finish-actions) {
+    flex: auto;
+    min-width: 0;
+    width: 100%;
+  }
+  .finish-actions {
+    gap: 9px;
+  }
+  .finish-actions > button {
+    min-width: 0;
+    width: 100%;
+    flex: auto;
+  }
+  .header-actions {
+    gap: 3px;
+  }
+  .header-actions .personalized {
+    display: none;
+  }
+  .toast {
+    font-size: 12px;
+    gap: 6px;
+  }
+  .moani-toast {
+    width: 48px;
+    height: 48px;
+  }
+  .app-footer {
+    flex-direction: column;
+    margin-top: 28px;
+  }
+  .moani-footer {
+    width: 85px;
+    height: 85px;
+  }
+  .update-banner {
+    padding: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .update-banner > div {
+    flex: 1;
+    min-width: 160px;
+  }
+  .update-banner .secondary {
+    width: 100%;
+    min-height: 44px;
+  }
+  .moani-update {
+    width: 55px;
+    height: 55px;
+  }
+  .moani-notice-intro .moani-art {
+    width: 85px;
+    height: 85px;
+  }
+  .app-updates {
+    padding-left: 0;
+  }
+  .moani-settings {
+    position: static;
+    float: left;
+    width: 72px;
+    height: 72px;
+  }
+  .app-updates .full {
+    clear: both;
+  }
+  .retro-receipt > span {
+    width: 100%;
+    text-align: right;
+    margin-top: 3px;
+  }
+}
+/* Leave room for the rotated watermark's bounding box at narrow widths. */
+.watermark-one{right:32px}.watermark-two{left:32px}

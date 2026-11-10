@@ -5,6 +5,11 @@ import type {
 } from "@supabase/supabase-js";
 import { emptyData, type Data } from "./model.ts";
 import { applyAction, type Action } from "./localActions.ts";
+import {
+  detectAdditions,
+  mergeNotices,
+  type ShoppingNotice,
+} from "./notifications.ts";
 export type Mode =
   | "loading"
   | "signin"
@@ -24,6 +29,7 @@ export type State = {
   busy: boolean;
   sync: string;
   online: boolean;
+  notifications: ShoppingNotice[];
 };
 type Persistence = {
   load: () => Data | null;
@@ -67,6 +73,11 @@ export function snapshot(result: unknown, hid: string): Data {
   };
 }
 export function verifyWrite(data: Data, action: Action) {
+  if (
+    action.type === "completeList" &&
+    !data.lists.some((l) => l.id === action.id && l.status === "completed")
+  )
+    throw Error("בסיס הנתונים לא אישר את סיום הקנייה.");
   if (
     action.type === "list" &&
     !data.lists.some(
@@ -122,6 +133,7 @@ export class ShoppingStore {
   private subscriptionId = 0;
   private refreshTimer: ReturnType<typeof setTimeout> | null = null;
   private localVersion = 0;
+  private ownAdditions = new Set<string>();
   private client: SupabaseClient | null;
   private persistence: Persistence;
   constructor(client: SupabaseClient | null, persistence: Persistence) {
@@ -138,6 +150,7 @@ export class ShoppingStore {
       busy: false,
       sync: client ? "בודקים חיבור לענן…" : "מקומי במכשיר הזה",
       online: true,
+      notifications: [],
     };
   }
   subscribe = (fn: () => void) => {
@@ -152,6 +165,12 @@ export class ShoppingStore {
     this.listeners.forEach((fn) => fn());
   }
   setError = (error: string) => this.set({ error });
+  dismissNotice = (id?: string) =>
+    this.set({
+      notifications: id
+        ? this.state.notifications.filter((n) => n.id !== id)
+        : [],
+    });
   localChanged = () => {
     try {
       const localData = this.persistence.load() || emptyData;
@@ -228,7 +247,13 @@ export class ShoppingStore {
     this.identity = id;
     const epoch = ++this.epoch;
     this.unbind();
-    this.set({ household: null, data: emptyData, error: "" });
+    this.ownAdditions.clear();
+    this.set({
+      household: null,
+      data: emptyData,
+      error: "",
+      notifications: [],
+    });
     if (!s) {
       this.set({
         mode: "signin",
@@ -296,6 +321,13 @@ export class ShoppingStore {
     const next = snapshot(data, hid);
     if (sequence === this.readSequence)
       this.set({
+        notifications:
+          this.state.mode === "cloud"
+            ? mergeNotices(
+                this.state.notifications,
+                detectAdditions(this.state.data, next, this.ownAdditions),
+              )
+            : this.state.notifications,
         data: next,
         sync: this.live
           ? "מחוברים לשיתוף חי"
@@ -376,6 +408,10 @@ export class ShoppingStore {
       throw e;
     }
     this.set({ busy: true, error: "" });
+    if (action.type === "list")
+      this.ownAdditions.add(`list:${action.value.id}`);
+    if (action.type === "item")
+      this.ownAdditions.add(`item:${action.value.id}`);
     const epoch = this.epoch,
       hid = this.state.household;
     try {
@@ -393,11 +429,25 @@ export class ShoppingStore {
           throw Error(
             "החשבון השתנה בזמן השמירה. יש לבדוק את הרשימה לפני ניסיון נוסף.",
           );
+        if (
+          error &&
+          action.type === "completeList" &&
+          error.message?.includes("unknown action")
+        )
+          throw Error(
+            "סיום ללא קבלה דורש התקנת עדכון בסיס הנתונים 202611110001. הרשימה נשארה ללא שינוי.",
+          );
         if (error) throw cloudError(error);
         const next = snapshot(data, hid);
         verifyWrite(next, action);
         ++this.readSequence;
-        this.set({ data: next });
+        this.set({
+          data: next,
+          notifications: mergeNotices(
+            this.state.notifications,
+            detectAdditions(this.state.data, next, this.ownAdditions),
+          ),
+        });
       } else {
         const write = async () => {
           const next = applyAction(
@@ -467,6 +517,8 @@ export class ShoppingStore {
     );
     const hid = this.state.household,
       epoch = this.epoch;
+    lists.forEach((l) => this.ownAdditions.add(`list:${l.id}`));
+    items.forEach((i) => this.ownAdditions.add(`item:${i.id}`));
     this.set({ busy: true, error: "" });
     try {
       const { data, error } = await this.client.rpc("shopping_import_local", {

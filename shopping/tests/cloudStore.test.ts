@@ -358,3 +358,33 @@ test("Delayed local storage events cannot replace a newer successful local write
     stop();
   }
 });
+test("Partner receives Moani notices for new lists and products; the author does not", async () => {
+  const service = new Service(),
+    a = store(new Client(service, "a")),
+    b = store(new Client(service, "b"));
+  try {
+    await until(() => a.s.state.mode === "cloud" && b.s.state.mode === "cloud");
+    await a.s.dispatch({ type: "list", value: list });
+    await until(() => b.s.state.notifications.some((n) => n.kind === "list"));
+    assert.equal(a.s.state.notifications.length, 0);
+    await a.s.dispatch({ type: "item", value: item });
+    await until(() => b.s.state.notifications.some((n) => n.kind === "items"));
+    assert.match(
+      b.s.state.notifications.find((n) => n.kind === "items")!.title,
+      /מואני/,
+    );
+    await b.s.dispatch({
+      type: "completeList",
+      id: list.id,
+      expected: b.s.state.data.lists[0].version,
+    });
+    await until(() => a.s.state.data.lists[0].status === "completed");
+    assert.equal(service.data.receipts.length, 0);
+    assert.equal(service.data.items.length, 1);
+    b.s.dismissNotice();
+    assert.equal(b.s.state.notifications.length, 0);
+  } finally {
+    a.stop();
+    b.stop();
+  }
+});

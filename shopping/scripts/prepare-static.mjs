@@ -1,5 +1,19 @@
 import { readFile, writeFile, readdir } from "node:fs/promises";
 import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
+const release =
+  process.env.NEXT_PUBLIC_APP_VERSION ||
+  process.env.GITHUB_SHA?.slice(0, 7) ||
+  (() => {
+    try {
+      return execFileSync("git", ["rev-parse", "--short", "HEAD"], {
+        encoding: "utf8",
+      }).trim();
+    } catch {
+      return "local";
+    }
+  })();
+await writeFile("out/version.json", JSON.stringify({ version: release }));
 const base = (process.env.NEXT_PUBLIC_BASE_PATH || "").replace(/\/$/, "");
 const manifest = JSON.parse(await readFile("out/manifest.webmanifest", "utf8"));
 manifest.start_url = `${base}/`;
@@ -16,7 +30,7 @@ async function walk(dir) {
   return result;
 }
 const assets = (await walk("out"))
-  .filter((f) => !f.endsWith("sw.js"))
+  .filter((f) => !f.endsWith("sw.js") && !f.endsWith("version.json"))
   .map((f) => `${base}${f.slice(3)}`);
 const version = createHash("sha256")
   .update(await readFile("out/index.html"))
@@ -27,7 +41,7 @@ await writeFile(
   `const CACHE=${JSON.stringify("together-cart-" + base + "-" + version)};const PREFIX=${JSON.stringify("together-cart-" + base + "-")};const ASSETS=${JSON.stringify(assets)};const HOME=${JSON.stringify(base + "/index.html")};
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k.startsWith(PREFIX)&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
-self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(e.request.method!=='GET'||u.origin!==location.origin)return;const key=u.pathname;if(e.request.mode==='navigate'&&key.startsWith(${JSON.stringify(base + "/")})){e.respondWith(fetch(e.request).catch(()=>caches.match(HOME)));return}if(ASSETS.includes(key))e.respondWith(caches.match(key).then(hit=>hit||fetch(e.request)))});
+self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(e.request.method!=='GET'||u.origin!==location.origin)return;const key=u.pathname;if(key===${JSON.stringify(base + "/version.json")}){e.respondWith(fetch(e.request,{cache:'no-store'}));return}if(e.request.mode==='navigate'&&key.startsWith(${JSON.stringify(base + "/")})){e.respondWith(fetch(e.request,{cache:'no-cache'}).catch(()=>caches.match(HOME)));return}if(ASSETS.includes(key))e.respondWith(caches.match(key).then(hit=>hit||fetch(e.request)))});
 `,
 );
 console.log(`Prepared static app and scoped offline cache at ${base || "/"}.`);
